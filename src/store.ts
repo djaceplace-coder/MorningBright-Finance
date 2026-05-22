@@ -229,8 +229,21 @@ export const useStore = create<BankState>((set, get) => {
           }
         });
 
-        if (error) throw error;
-        if (!data.user) throw new Error("Email may already be registered or unavailable if email security is enabled. Please try logging in.");
+        if (error) {
+          // If already registered, sign them in automatically if possible, or just throw clear error
+          if (error.message.includes('already registered')) {
+            throw new Error("This email is already registered. Please sign in instead.");
+          }
+          throw error;
+        }
+        
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+          throw new Error("This email is already registered. Please sign in instead.");
+        }
+        
+        if (!data.user) {
+          throw new Error("Failed to create account. Please try again.");
+        }
 
         // If email confirmation is required, session will be null.
         // We cannot insert records until the user verifies and signs in.
@@ -274,26 +287,26 @@ export const useStore = create<BankState>((set, get) => {
 
         // Insert primary relational credentials
         const { error: pErr } = await supabase.from('users').insert(mapUserToDb(profile));
-        if (pErr) throw pErr;
+        if (pErr) console.warn("Seed users error:", pErr);
 
         const { error: bErr } = await supabase.from('balances').insert(mapBalanceToDb(balance));
-        if (bErr) throw bErr;
+        if (bErr) console.warn("Seed balances error:", bErr);
 
         const { error: sErr } = await supabase.from('settings').insert(mapSettingsToDb(settingsDoc));
-        if (sErr) throw sErr;
+        if (sErr) console.warn("Seed settings error:", sErr);
 
         // Seed sub-records if any
         for (const tx of INITIAL_TRANSACTIONS(data.user.id)) {
-          await supabase.from('transactions').insert(mapTransactionToDb(tx));
+          supabase.from('transactions').insert(mapTransactionToDb(tx)).then();
         }
         for (const card of INITIAL_CARDS(data.user.id, `${first} ${last}`)) {
-          await supabase.from('cards').insert(mapCardToDb(card));
+          supabase.from('cards').insert(mapCardToDb(card)).then();
         }
         for (const goal of INITIAL_SAVINGS(data.user.id)) {
-          await supabase.from('savings_goals').insert(mapSavingsToDb(goal));
+          supabase.from('savings_goals').insert(mapSavingsToDb(goal)).then();
         }
         for (const notif of INITIAL_NOTIFICATIONS(data.user.id)) {
-          await supabase.from('notifications').insert(mapNotificationToDb(notif));
+          supabase.from('notifications').insert(mapNotificationToDb(notif)).then();
         }
 
         set({ loading: false });
@@ -325,6 +338,12 @@ export const useStore = create<BankState>((set, get) => {
       } catch (e) {
         console.warn('Sign out error:', e);
       }
+      // Force clear local storage for supabase auth keys to prevent zombie sessions
+      for (const key of Object.keys(localStorage)) {
+        if (key.startsWith('sb-')) {
+          localStorage.removeItem(key);
+        }
+      }
       set({
         user: null,
         balance: null,
@@ -333,7 +352,8 @@ export const useStore = create<BankState>((set, get) => {
         savings: [],
         notifications: [],
         settings: null,
-        biometricAuthenticated: false
+        biometricAuthenticated: false,
+        authChecked: true
       });
     },
 
