@@ -128,12 +128,14 @@ interface BankState {
   issueTransfer: (recipientEmail: string, amount: number, memo: string) => Promise<void>;
   addFunds: (amount: number, target: 'checking' | 'savings') => Promise<void>;
   createCard: (holder: string, cardType: 'platinum' | 'ebony' | 'emerald') => Promise<void>;
+  deleteCard: (cardId: string) => Promise<void>;
   toggleCardFrozen: (cardId: string) => Promise<void>;
   updateCardLimit: (cardId: string, limit: number) => Promise<void>;
   createSavingsGoal: (title: string, target: number, color: string) => Promise<void>;
   contributeToSavings: (goalId: string, amount: number) => Promise<void>;
   toggleGoalAutoSave: (goalId: string, percentage: number) => Promise<void>;
   markNotificationAsRead: (id: string) => Promise<void>;
+  updatePinCode: (pin: string) => Promise<void>;
   updateProfile: (first: string, last: string) => Promise<void>;
   updatePasswordSecure: (pass: string) => Promise<void>;
   updateSettingsToggle: (key: keyof UserSecuritySettings, val: boolean | 'light' | 'dark' | 'system') => Promise<void>;
@@ -729,14 +731,14 @@ export const useStore = create<BankState>((set, get) => {
       const u = get().user;
       if (!u) return;
 
-      const generateFullCard = () => Array.from({length: 4}, () => Math.floor(1000 + Math.random() * 9000).toString()).join(' ');
+      const generateFullCard = () => Array.from({length: 4}, () => Math.floor(1000 + Math.random() * 9000).toString().padStart(4, '0')).join(' ');
       const newCard: VirtualCard = {
         id: 'card_' + Math.random().toString(36).substring(2,10),
         userId: u.uid,
         cardholderName: holder.toUpperCase(),
         cardNumber: generateFullCard(),
         expiryDate: `${String(new Date().getMonth() + 1).padStart(2, '0')}/${String(new Date().getFullYear() + 6).substring(2)}`,
-        cvv: String(Math.floor(100 + Math.random() * 900)),
+        cvv: String(Math.floor(100 + Math.random() * 900)).padStart(3, '0'),
         isFrozen: false,
         spendingLimit: cardType === 'ebony' ? 50000 : cardType === 'platinum' ? 25000 : 10000,
         spentThisMonth: 0,
@@ -744,35 +746,48 @@ export const useStore = create<BankState>((set, get) => {
         createdAt: new Date().toISOString()
       };
 
-      
-
       try {
+        set({ cards: [...get().cards, newCard] });
         await supabase.from('cards').insert(mapCardToDb(newCard));
       } catch (e) {
+        set({ cards: get().cards.filter(c => c.id !== newCard.id) });
         handleSupabaseError(e, OperationType.CREATE, `cards/${newCard.id}`);
+      }
+    },
+
+    deleteCard: async (cardId) => {
+      const currentCards = get().cards;
+      try {
+        set({ cards: currentCards.filter(c => c.id !== cardId) });
+        await supabase.from('cards').delete().eq('id', cardId);
+      } catch (e) {
+        set({ cards: currentCards });
+        handleSupabaseError(e, OperationType.DELETE, `cards/${cardId}`);
       }
     },
 
     toggleCardFrozen: async (cardId) => {
       const targetCard = get().cards.find(c => c.id === cardId);
       if (!targetCard) return;
-
       const nextFrozen = !targetCard.isFrozen;
       
-
+      const currentCards = get().cards;
       try {
+        set({ cards: currentCards.map(c => c.id === cardId ? { ...c, isFrozen: nextFrozen } : c) });
         await supabase.from('cards').update({ is_frozen: nextFrozen }).eq('id', cardId);
       } catch (e) {
+        set({ cards: currentCards });
         handleSupabaseError(e, OperationType.UPDATE, `cards/${cardId}`);
       }
     },
 
     updateCardLimit: async (cardId, limit) => {
-      
-
+      const currentCards = get().cards;
       try {
+        set({ cards: currentCards.map(c => c.id === cardId ? { ...c, spendingLimit: limit } : c) });
         await supabase.from('cards').update({ spending_limit: limit }).eq('id', cardId);
       } catch (e) {
+        set({ cards: currentCards });
         handleSupabaseError(e, OperationType.UPDATE, `cards/${cardId}`);
       }
     },
@@ -876,6 +891,18 @@ export const useStore = create<BankState>((set, get) => {
         await supabase.from('notifications').update({ is_read: true }).eq('id', id);
       } catch (e) {
         handleSupabaseError(e, OperationType.UPDATE, `notifications/${id}`);
+      }
+    },
+
+    updatePinCode: async (pin: string) => {
+      const u = get().user;
+      if (!u) return;
+
+      try {
+        await supabase.from('users').update({ pin_code: pin }).eq('id', u.uid);
+        set({ user: { ...u, pinCode: pin }, errorMessage: null });
+      } catch (e: any) {
+        set({ errorMessage: e.message || 'Error updating PIN' });
       }
     },
 

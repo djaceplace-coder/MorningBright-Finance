@@ -14,7 +14,12 @@ import {
   ArrowDownLeft, 
   Activity, 
   Clock,
-  ChevronRight
+  ChevronRight,
+  ArrowRightLeft,
+  ReceiptText,
+  CreditCard,
+  PiggyBank,
+  Settings
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -109,7 +114,7 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
         <div>
           <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">Transaction History PORTAL</span>
           <h2 className="text-2xl font-sans tracking-tight font-medium text-slate-900 dark:text-white mt-1">
-            Welcome back, {user?.firstName || 'Valued Account'}
+            Hi, {user?.lastName || 'Valued Account'}
           </h2>
         </div>
         
@@ -152,6 +157,29 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
       ))}
 
       {/* BENTO BOX COMBINED METRICS */}
+      
+      {/* QUICK ACTIONS ROW */}
+      <div className="grid grid-cols-5 gap-3">
+        {[
+           { id: 'transfers', label: 'Transfer', icon: <ArrowRightLeft size={18} />, color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
+           { id: 'bills', label: 'Pay Bills', icon: <ReceiptText size={18} />, color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
+           { id: 'cards', label: 'Cards', icon: <CreditCard size={18} />, color: 'bg-violet-500/10 text-violet-600 dark:text-violet-400' },
+           { id: 'savings', label: 'Savings', icon: <PiggyBank size={18} />, color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+           { id: 'settings', label: 'Settings', icon: <Settings size={18} />, color: 'bg-slate-500/10 text-slate-600 dark:text-slate-400' }
+        ].map(action => (
+          <button 
+            key={action.id}
+            onClick={() => onNavigateTab(action.id)}
+            className="flex flex-col items-center justify-center p-3 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-white/10 transition-all cursor-pointer shadow-sm dark:shadow-none space-y-2 hover:scale-[1.02]"
+          >
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${action.color}`}>
+              {action.icon}
+            </div>
+            <span className="text-[10px] font-semibold text-slate-900 dark:text-white tracking-tight">{action.label}</span>
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* TOTAL VALUE */}
@@ -386,63 +414,28 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-4">
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Wire Deposit</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Simulate incoming transfer</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Add Funds</h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                To initiate a deposit via Mobile Cheque, Direct Deposit, Bitcoin, or other Cryptocurrency, please contact our Support AI System.
+              </p>
             </div>
 
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-[9px] font-mono uppercase text-slate-500">Total Capital (USD)</label>
-                <input 
-                  type="number" 
-                  value={fundingAmount}
-                  onChange={(e) => setFundingAmount(e.target.value)}
-                  className="w-full h-11 px-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-55 dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500"
-                  placeholder="500"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[9px] font-mono uppercase text-slate-500 font-bold">Target Account</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button 
-                    type="button"
-                    onClick={() => setFundingTarget('checking')}
-                    className={`h-11 text-xs font-bold uppercase tracking-wider rounded-xl border transition-all cursor-pointer ${
-                      fundingTarget === 'checking' 
-                        ? 'border-emerald-500 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400' 
-                        : 'border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10'
-                    }`}
-                  >
-                    Checking
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => setFundingTarget('savings')}
-                    className={`h-11 text-xs font-bold uppercase tracking-wider rounded-xl border transition-all cursor-pointer ${
-                      fundingTarget === 'savings' 
-                        ? 'border-emerald-500 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 font-bold' 
-                        : 'border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10'
-                    }`}
-                  >
-                    Savings
-                  </button>
-                </div>
-              </div>
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 space-y-2">
+              <span className="block text-[10px] text-slate-400 font-mono uppercase tracking-widest font-bold">Priority Support Line</span>
+              <a href="tel:+18005550199" className="text-xl font-mono text-emerald-600 dark:text-emerald-400 font-bold block">
+                +1 (800) 555-0199
+              </a>
+              <span className="block text-[10px] text-slate-500 mt-2">
+                Our AI agent will process your request and connect you to an escalation agent if needed.
+              </span>
             </div>
 
-            <div className="flex space-x-3 pt-2">
+            <div className="flex pt-2">
               <button 
                 onClick={() => setFundingModalOpen(false)}
-                className="flex-1 h-11 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 border border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
+                className="w-full h-11 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 border border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
               >
-                Cancel
-              </button>
-              <button 
-                onClick={handleApplyFunding}
-                className="flex-1 h-11 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-widest cursor-pointer"
-              >
-                Add Funds
+                Close
               </button>
             </div>
           </div>

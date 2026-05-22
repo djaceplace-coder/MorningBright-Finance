@@ -38,7 +38,8 @@ export function BillsView() {
         
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-medium tracking-tight text-slate-900 dark:text-white">Bill Payments</h1>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">Scheduled Allocations</span>
+            <h1 className="text-2xl font-medium tracking-tight text-slate-900 dark:text-white mt-1">Hi, {user?.lastName || 'Client'} - Bill Payments</h1>
             <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">Manage and pay your automated billers.</p>
           </div>
           <div className="flex items-center space-x-3">

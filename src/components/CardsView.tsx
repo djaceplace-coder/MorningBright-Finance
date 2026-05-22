@@ -24,7 +24,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 
 export function CardsView() {
-  const { cards, createCard, toggleCardFrozen, updateCardLimit, transactions } = useStore();
+  const { user, cards, createCard, toggleCardFrozen, updateCardLimit, transactions } = useStore();
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [showCardNumbers, setShowCardNumbers] = useState(false);
   const [newCardName, setNewCardName] = useState('');
@@ -81,7 +81,7 @@ export function CardsView() {
         <div>
           <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">CARDS MATRIX</span>
           <h2 className="text-2xl font-sans tracking-tight font-medium text-slate-900 dark:text-white mt-1">
-            Virtual Touch Cards
+            Hi, {user?.lastName || 'Client'} - Virtual Touch Cards
           </h2>
         </div>
 
@@ -276,6 +276,36 @@ export function CardsView() {
                     <span>Apply Limit Bounds</span>
                   </button>
                 </div>
+              </div>
+
+              {/* CARD LINKED IDENTITY & DESTROY */}
+              <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-4 transition-all text-slate-800 dark:text-slate-200">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Linked Identity Setup</h3>
+                  <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Billing & Management</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 space-y-1">
+                    <span className="text-[9px] font-mono text-slate-500 block uppercase">Billing Address</span>
+                    <span className="block font-medium text-slate-900 dark:text-white">123 Financial District, Suite 500, New York, NY 10004</span>
+                  </div>
+                  <div className="p-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 space-y-1">
+                    <span className="text-[9px] font-mono text-slate-500 block uppercase">Linked Phone Phone</span>
+                    <span className="block font-medium text-slate-900 dark:text-white">+1 (555) 019-9021</span>
+                  </div>
+                </div>
+                <button
+                  onClick={async () => {
+                     if (window.confirm("Are you sure you want to permanently delete this virtual card?")) {
+                       await useStore.getState().deleteCard(activeCard.id);
+                       setSelectedCardId(null);
+                     }
+                  }}
+                  className="w-full h-11 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/5 text-xs font-bold flex items-center justify-center space-x-1.5 uppercase transition-colors cursor-pointer"
+                >
+                  <X size={14} />
+                  <span>Destroy Identity Card</span>
+                </button>
               </div>
 
               {/* CARD TRANSACTIONS TRACKING */}

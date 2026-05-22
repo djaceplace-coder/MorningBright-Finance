@@ -33,11 +33,48 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 
+declare global {
+  interface Window {
+    deferredPrompt: any;
+    installPWA: () => void;
+  }
+}
+
 export default function App() {
   const { user, settings, logOutUser, initAuthListener } = useStore();
   const [currentTab, setCurrentTab] = useState('home');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isHeaderDropdownOpen, setIsHeaderDropdownOpen] = useState(false);
+  
+  const [isPWA, setIsPWA] = useState(false);
+
+  // Setup PWA listener
+  React.useEffect(() => {
+    const media = window.matchMedia('(display-mode: standalone)');
+    setIsPWA(media.matches);
+    
+    const listener = (e: MediaQueryListEvent) => setIsPWA(e.matches);
+    media.addEventListener('change', listener);
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      window.deferredPrompt = e;
+    });
+
+    window.installPWA = async () => {
+      if (window.deferredPrompt) {
+        window.deferredPrompt.prompt();
+        const { outcome } = await window.deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          window.deferredPrompt = null;
+        }
+      } else {
+        alert("PWA is already installed or not supported by this browser.");
+      }
+    };
+    
+    return () => media.removeEventListener('change', listener);
+  }, []);
 
   // Startup persistent auth session restore effect
   React.useEffect(() => {
@@ -140,19 +177,21 @@ export default function App() {
         </>
       ) : (
         // PRIVATE DASHBOARD CLIENT PORTAL
-        <div className="flex min-h-screen relative overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
+        <div className={`flex min-h-screen relative overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors ${isPWA ? 'max-w-[480px] mx-auto border-x border-slate-200 dark:border-white/5 shadow-2xl' : ''}`}>
           
           {/* DESKTOP SIDEBAR */}
-          <Sidebar currentTab={currentTab} onChangeTab={setCurrentTab} />
+          <div className={isPWA ? "hidden" : "hidden md:block"}>
+            <Sidebar currentTab={currentTab} onChangeTab={setCurrentTab} />
+          </div>
 
           {/* MAIN PAGE BODY */}
           <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
             
             {/* MOBILE NAVIGATION HEADER */}
-            <header className="md:hidden h-16 bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-white/5 flex items-center justify-between px-6 z-45 transition-colors">
+            <header className={`${isPWA ? 'flex' : 'md:hidden flex'} h-16 bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-white/5 items-center justify-between px-6 z-45 transition-colors`}>
               <div className="flex items-center space-x-2.5">
                 <Logo className="w-7 h-7" withBackground={true} />
-                <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white">Morning Bright</span>
+                <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white">Hi, {user?.lastName || 'Client'}</span>
               </div>
 
               <div className="flex items-center space-x-3.5 text-slate-900 dark:text-white relative">

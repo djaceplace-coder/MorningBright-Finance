@@ -66,6 +66,14 @@ export function TransfersView() {
       return;
     }
 
+    if (user?.pinCode) {
+      const enteredPin = window.prompt("Enter your 4-digit transfer PIN to authorize this transaction:");
+      if (!enteredPin || enteredPin !== user.pinCode) {
+        useStore.setState({ errorMessage: "Invalid transfer PIN. Transaction aborted." });
+        return;
+      }
+    }
+
     await issueTransfer(recipientEmail, val, description);
     const hasError = useStore.getState().errorMessage;
     if (!hasError) {
@@ -98,7 +106,7 @@ export function TransfersView() {
       <div className="border-b border-slate-205 dark:border-white/5 pb-4 text-slate-900 dark:text-white">
         <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">WIRE TRANSFER TERMINAL</span>
         <h2 className="text-2xl font-sans tracking-tight font-medium text-slate-900 dark:text-white mt-1">
-          Transfers & Wire Desk
+          Hi, {user?.lastName || 'Client'} - Transfers & Wire Desk
         </h2>
       </div>
 
@@ -141,23 +149,65 @@ export function TransfersView() {
                     <option value="bofa">Bank of America</option>
                     <option value="wells">Wells Fargo</option>
                     <option value="citi">Citibank</option>
+                    <option value="usbank">U.S. Bank</option>
+                    <option value="capitalone">Capital One</option>
+                    <option value="td">TD Bank</option>
+                    <option value="pnc">PNC Bank</option>
+                    <option value="truist">Truist Financial</option>
+                    <option value="goldman">Goldman Sachs</option>
                   </optgroup>
-                  <optgroup label="United Kingdom">
+                  <optgroup label="United Kingdom & Europe">
                     <option value="barclays">Barclays</option>
                     <option value="hsbc">HSBC</option>
                     <option value="natwest">NatWest</option>
                     <option value="monzo">Monzo</option>
-                  </optgroup>
-                  <optgroup label="Europe">
                     <option value="bnp">BNP Paribas</option>
                     <option value="db">Deutsche Bank</option>
                     <option value="revolut">Revolut</option>
                     <option value="n26">N26</option>
                   </optgroup>
+                  <optgroup label="Asia Pacific">
+                    <option value="sg">DBS Bank (Singapore)</option>
+                    <option value="mufg">MUFG Bank (Japan)</option>
+                    <option value="anz">ANZ (Australia)</option>
+                    <option value="cba">Commonwealth Bank (Australia)</option>
+                    <option value="hkma">Bank of China (Hong Kong)</option>
+                  </optgroup>
+                  <optgroup label="Digital / Crypto">
+                    <option value="crypto_btc">Bitcoin Network</option>
+                    <option value="crypto_eth">Ethereum Network (ERC-20)</option>
+                    <option value="crypto_sol">Solana Network</option>
+                    <option value="kraken">Kraken Exchange</option>
+                    <option value="coinbase">Coinbase</option>
+                  </optgroup>
                 </select>
               </div>
 
-              <div className="space-y-1.5">
+              {bank !== 'internal' && !bank.startsWith('crypto_') && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 mt-2">
+                  <div className="space-y-1.5">
+                     <label className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">SWIFT / BIC Code</label>
+                     <input type="text" placeholder="e.g. BOFAUS3N" className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" required />
+                  </div>
+                  <div className="space-y-1.5">
+                     <label className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">Routing Number</label>
+                     <input type="text" placeholder="e.g. 121000358" className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" required />
+                  </div>
+                  <div className="space-y-1.5 col-span-2">
+                     <label className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">Recipient Account Name</label>
+                     <input type="text" placeholder="Exact name on target account" className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" required />
+                  </div>
+                </div>
+              )}
+              
+              {bank.startsWith('crypto_') && (
+                <div className="p-3 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 mt-2 space-y-1.5">
+                     <label className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">Destination Wallet Address</label>
+                     <input type="text" placeholder="e.g. 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 font-mono" required />
+                </div>
+              )}
+
+              <div className="space-y-1.5 mt-2">
                 <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Recipient Account Address</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />

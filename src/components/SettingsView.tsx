@@ -18,7 +18,8 @@ import {
   SmartphoneNfc,
   Sun,
   Moon,
-  Laptop
+  Laptop,
+  AlertCircle
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { supabase } from '../supabase';
@@ -66,9 +67,16 @@ export function SettingsView() {
   };
 
   const handleToggleFaceId = async () => {
-    if (settings) {
-      await updateSettingsToggle('faceIdEnabled', !settings.faceIdEnabled);
-      setSuccessMsg("Security biometrics configurations adjusted successfully.");
+    if (!window.matchMedia('(display-mode: standalone)').matches) {
+       setSuccessMsg("Biometric access requires the app to be installed (PWA). Please install the app first.");
+       return;
+    }
+    // Simulate asking permission
+    if (confirm("Allow Morning Bright to use Face/Touch ID for authentication?")) {
+      if (settings) {
+        await updateSettingsToggle('faceIdEnabled', !settings.faceIdEnabled);
+        setSuccessMsg("Security biometrics configurations adjusted successfully.");
+      }
     }
   };
 
@@ -114,7 +122,7 @@ export function SettingsView() {
       <div className="border-b border-slate-200 dark:border-white/5 pb-4">
         <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">ACCOUNT CONFIGURATIONS</span>
         <h2 className="text-2xl font-sans tracking-tight font-medium text-slate-900 dark:text-white mt-1">
-          Settings & Security Matrix
+          Hi, {user?.lastName || 'Client'} - Settings & Security Matrix
         </h2>
       </div>
 
@@ -236,33 +244,41 @@ export function SettingsView() {
           </div>
 
           {/* KYC VERIFICATION BOX */}
-          <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-4 transition-all">
+          <div className="p-6 rounded-2xl border border-red-500/20 bg-white dark:bg-slate-900/40 space-y-4 transition-all">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">KYC Verification</h3>
-              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Identity document upload</p>
+              <h3 className="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center space-x-2">
+                <AlertCircle size={14} />
+                <span>Urgent: KYC Verification</span>
+              </h3>
+              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Identity Verification Required</p>
             </div>
 
             <span className="text-xs text-slate-500 dark:text-slate-400 block leading-relaxed">
-              Upload a valid USA identification document and SSN to fully activate your account for external transfers.
+              Fully verify your identity to unlock external transfers and remove provisional account limits.
             </span>
 
             <div className="flex flex-col space-y-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-950 dark:text-white font-medium">Status</span>
-                <span className={`font-semibold font-mono ${isVerified ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-500'}`}>
-                  {isVerified ? 'Fully Activated' : 'Pending Documents'}
+                <span className="text-slate-950 dark:text-white font-medium">Account Status</span>
+                <span className={`font-semibold font-mono ${isVerified ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 px-2 py-0.5 bg-red-500/10 rounded'}`}>
+                  {isVerified ? 'Fully Activated' : 'Restricted (Provisional)'}
                 </span>
               </div>
               {!isVerified && (
-                <div className="space-y-3">
-                  <input type="text" placeholder="SSN (XXX-XX-XXXX)" className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" />
-                  <div className="relative h-20 rounded-lg border-2 border-dashed border-slate-300 dark:border-white/10 bg-white dark:bg-white/5 flex flex-col items-center justify-center text-xs text-slate-500 hover:border-emerald-500/50 cursor-pointer overflow-hidden group">
-                    <span className="font-semibold group-hover:text-emerald-500 transition-colors">Select ID / Driver's License Document</span>
-                    <span className="text-[10px] opacity-70 mt-1">.jpg, .png, .pdf</span>
-                    <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
+                <div className="space-y-4 pt-2">
+                  <div className="space-y-3 border-t border-slate-200 dark:border-white/5 pt-4">
+                    <input type="text" placeholder="Full Legal Name" className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-red-500" />
+                    <input type="date" placeholder="Date of Birth" className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-red-500" />
+                    <input type="text" placeholder="US Social Security Number (XXX-XX-XXXX)" className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-red-500" />
+                    <input type="text" placeholder="Residential Address" className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-red-500" />
+                    <div className="relative h-24 rounded-lg border-2 border-dashed border-red-500/30 bg-red-50 dark:bg-red-500/5 flex flex-col items-center justify-center text-xs text-red-500 hover:border-red-500 cursor-pointer overflow-hidden group transition-all">
+                      <span className="font-semibold group-hover:scale-105 transition-transform">Capture ID or Driver's License</span>
+                      <span className="text-[10px] opacity-70 mt-1">Tap to open camera or select file</span>
+                      <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
+                    </div>
                   </div>
-                  <button onClick={() => setSuccessMsg("KYC documents uploaded successfully. Pushing to review queue.")} className="w-full h-10 rounded-lg bg-emerald-500 text-white text-xs font-bold transition-transform hover:scale-[1.01] cursor-pointer">
-                    Submit Verification
+                  <button onClick={() => setSuccessMsg("KYC application received. Our compliance team will review your documents shortly.")} className="w-full h-10 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-transform hover:scale-[1.01] cursor-pointer">
+                    Submit Application
                   </button>
                 </div>
               )}
@@ -321,7 +337,15 @@ export function SettingsView() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setSuccessMsg("Transfer PIN configuration securely initialized.")}
+                    onClick={async () => {
+                      const newPin = window.prompt("Enter a new 4-digit transfer PIN:");
+                      if (newPin && /^\d{4}$/.test(newPin)) {
+                        await useStore.getState().updatePinCode(newPin);
+                        setSuccessMsg("Transfer PIN securely updated!");
+                      } else if (newPin) {
+                        setSuccessMsg("Invalid PIN format. Must be exactly 4 digits.");
+                      }
+                    }}
                     className="h-8 px-3 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold transition-transform hover:scale-[1.05] cursor-pointer"
                   >
                     Setup PIN
@@ -369,7 +393,13 @@ export function SettingsView() {
                 <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Progressive Web Application</p>
               </div>
               <button 
-                onClick={() => setSuccessMsg("PWA installation prompt initiated.")}
+                onClick={() => {
+                  if (typeof window.installPWA === 'function') {
+                    window.installPWA();
+                  } else {
+                    setSuccessMsg("PWA installation prompt initiated.");
+                  }
+                }}
                 className="h-9 px-4 rounded-lg bg-slate-950 dark:bg-white text-white dark:text-black hover:bg-slate-900 text-xs font-bold transition-transform hover:scale-[1.01] cursor-pointer"
               >
                 Install App

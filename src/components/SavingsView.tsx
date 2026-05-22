@@ -21,7 +21,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 
 export function SavingsView() {
-  const { balance, savings, createSavingsGoal, contributeToSavings, loading, errorMessage, clearError } = useStore();
+  const { user, balance, savings, createSavingsGoal, contributeToSavings, loading, errorMessage, clearError } = useStore();
   const [goalName, setGoalName] = useState('');
   const [goalTarget, setGoalTarget] = useState('');
   const [goalInitial, setGoalInitial] = useState('');
@@ -110,7 +110,7 @@ export function SavingsView() {
         <div>
           <span className="text-[10px] text-emerald-605 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">SAVINGS PROTOCOLS</span>
           <h2 className="text-2xl font-sans tracking-tight font-medium text-slate-900 dark:text-white mt-1">
-            Goal Reserves & Savings Goals
+            Hi, {user?.lastName || 'Client'} - Goal Reserves & Savings Goals
           </h2>
         </div>
 
