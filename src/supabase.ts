@@ -5,18 +5,20 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Load environmental variables safely from both Next / Vite
-const globalEnv = (import.meta as any).env || {};
-const SUPABASE_URL = globalEnv.VITE_SUPABASE_URL || globalEnv.NEXT_PUBLIC_SUPABASE_URL || "https://biqrsbpcbmtodmxcydku.supabase.co";
-const SUPABASE_ANON_KEY = globalEnv.VITE_SUPABASE_ANON_KEY || globalEnv.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpcXJzYnBjYm10b2RteGN5ZGt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0MDk3NDYsImV4cCI6MjA5NDk4NTc0Nn0.q2uc8N5FhewTyFCToVo2hoh5hPeu6xeQPtyES6Afhlg.";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
+export const supabase = createClient(
+  supabaseUrl,
+  supabaseAnonKey,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
   }
-});
+);
 
 export let isSupabaseConnected = false;
 
