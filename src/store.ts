@@ -4,26 +4,28 @@
  */
 
 import { create } from 'zustand';
-import { auth, db, handleFirestoreError, OperationType } from './firebase';
 import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signOut, 
-  sendEmailVerification,
-  updatePassword
-} from 'firebase/auth';
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
-  updateDoc, 
-  collection, 
-  addDoc, 
-  onSnapshot, 
-  query, 
-  where,
-  deleteDoc
-} from 'firebase/firestore';
+  supabase, 
+  handleSupabaseError, 
+  OperationType,
+  mapUserToDb,
+  mapUserFromDb,
+  mapBalanceToDb,
+  mapBalanceFromDb,
+  mapCardToDb,
+  mapCardFromDb,
+  mapSavingsToDb,
+  mapSavingsFromDb,
+  mapNotificationToDb,
+  mapNotificationFromDb,
+  mapSettingsToDb,
+  mapSettingsFromDb,
+  mapLogToDb,
+  mapLogFromDb,
+  mapTransactionToDb,
+  mapTransactionFromDb
+} from './supabase';
+
 import { 
   UserProfile, 
   UserBalance, 
@@ -37,13 +39,10 @@ import {
   TransactionStatus
 } from './types';
 
-// Initial interactive assets for mock session or fallback sandbox environment - cleared for production-ready empty states
+// Initial interactive assets for mock session or fallback sandbox environment
 const INITIAL_TRANSACTIONS = (userId: string): BankTransaction[] => [];
-
 const INITIAL_CARDS = (userId: string): VirtualCard[] => [];
-
 const INITIAL_SAVINGS = (userId: string): SavingsGoal[] => [];
-
 const INITIAL_NOTIFICATIONS = (userId: string): BankNotification[] => [];
 
 interface BankState {
@@ -72,6 +71,7 @@ interface BankState {
   listeners: (() => void)[];
 
   // Actions
+  initAuthListener: () => () => void;
   signUpUser: (email: string, pass: string, first: string, last: string) => Promise<void>;
   logInUser: (email: string, pass: string) => Promise<void>;
   logOutUser: () => Promise<void>;
@@ -143,6 +143,45 @@ export const useStore = create<BankState>((set, get) => {
       }
     },
 
+    initAuthListener: () => {
+      // Restore cached session immediately
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user) {
+          if (!get().simulationActive) {
+            get().initRealtimeSubscriptions(session.user.id);
+          }
+        } else {
+          set({ authChecked: true });
+        }
+      });
+
+      // Stream auth events
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (get().simulationActive) return;
+
+        if (session?.user) {
+          get().initRealtimeSubscriptions(session.user.id);
+        } else {
+          get().clearSubscriptions();
+          set({
+            user: null,
+            balance: null,
+            transactions: [],
+            cards: [],
+            savings: [],
+            notifications: [],
+            settings: null,
+            biometricAuthenticated: false,
+            authChecked: true
+          });
+        }
+      });
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    },
+
     signUpUser: async (email, pass, first, last) => {
       set({ loading: true, errorMessage: null });
       
@@ -202,14 +241,25 @@ export const useStore = create<BankState>((set, get) => {
         return;
       }
 
-      // Real auth register
+      // Real auth register via Supabase
       try {
-        const cred = await createUserWithEmailAndPassword(auth, email, pass);
-        await sendEmailVerification(cred.user);
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password: pass,
+          options: {
+            data: {
+              firstName: first,
+              lastName: last
+            }
+          }
+        });
 
-        // Provision initial document profiles
+        if (error) throw error;
+        if (!data.user) throw new Error("Credentials processing conflict.");
+
+        // Provision initial relational records
         const profile: UserProfile = {
-          uid: cred.user.uid,
+          uid: data.user.id,
           firstName: first,
           lastName: last,
           email,
@@ -222,14 +272,14 @@ export const useStore = create<BankState>((set, get) => {
         };
 
         const balance: UserBalance = {
-          uid: cred.user.uid,
+          uid: data.user.id,
           checking: 0.00,
           savings: 0.00,
           updatedAt: new Date().toISOString()
         };
 
         const settingsDoc: UserSecuritySettings = {
-          uid: cred.user.uid,
+          uid: data.user.id,
           faceIdEnabled: false,
           webAuthnConfigured: false,
           pushNotifications: true,
@@ -238,29 +288,35 @@ export const useStore = create<BankState>((set, get) => {
           theme: 'system'
         };
 
-        // Put down the database roots
-        await setDoc(doc(db, 'users', cred.user.uid), profile);
-        await setDoc(doc(db, 'balances', cred.user.uid), balance);
-        await setDoc(doc(db, 'settings', cred.user.uid), settingsDoc);
+        // Insert primary relational credentials
+        const { error: pErr } = await supabase.from('users').insert(mapUserToDb(profile));
+        if (pErr) throw pErr;
 
-        // Seed initial subcollections documents
-        for (const tx of INITIAL_TRANSACTIONS(cred.user.uid)) {
-          await setDoc(doc(db, 'transactions', tx.id), tx);
+        const { error: bErr } = await supabase.from('balances').insert(mapBalanceToDb(balance));
+        if (bErr) throw bErr;
+
+        const { error: sErr } = await supabase.from('settings').insert(mapSettingsToDb(settingsDoc));
+        if (sErr) throw sErr;
+
+        // Seed sub-records if any
+        for (const tx of INITIAL_TRANSACTIONS(data.user.id)) {
+          await supabase.from('transactions').insert(mapTransactionToDb(tx));
         }
-        for (const card of INITIAL_CARDS(cred.user.uid)) {
-          await setDoc(doc(db, 'cards', card.id), card);
+        for (const card of INITIAL_CARDS(data.user.id)) {
+          await supabase.from('cards').insert(mapCardToDb(card));
         }
-        for (const goal of INITIAL_SAVINGS(cred.user.uid)) {
-          await setDoc(doc(db, 'savings', goal.id), goal);
+        for (const goal of INITIAL_SAVINGS(data.user.id)) {
+          await supabase.from('savings_goals').insert(mapSavingsToDb(goal));
         }
-        for (const notif of INITIAL_NOTIFICATIONS(cred.user.uid)) {
-          await setDoc(doc(db, 'notifications', notif.id), notif);
+        for (const notif of INITIAL_NOTIFICATIONS(data.user.id)) {
+          await supabase.from('notifications').insert(mapNotificationToDb(notif));
         }
 
         set({ loading: false });
-        get().initRealtimeSubscriptions(cred.user.uid);
-      } catch (e) {
-        set({ loading: false, errorMessage: e instanceof Error ? e.message : "Error during secure registration" });
+        // The subscription hook handles remaining layout changes
+        get().initRealtimeSubscriptions(data.user.id);
+      } catch (e: any) {
+        set({ loading: false, errorMessage: e.message || "Error during secure registration" });
       }
     },
 
@@ -273,9 +329,8 @@ export const useStore = create<BankState>((set, get) => {
           const simUid = 'sim_demo';
           const stored = localStorage.getItem(`sim_user_${simUid}`);
           if (stored) {
-            const parsedProfile = JSON.parse(stored);
             set({
-              user: parsedProfile,
+              user: JSON.parse(stored),
               balance: JSON.parse(localStorage.getItem(`sim_balance_${simUid}`) || '{}'),
               transactions: JSON.parse(localStorage.getItem(`sim_txs_${simUid}`) || '[]'),
               cards: JSON.parse(localStorage.getItem(`sim_cards_${simUid}`) || '[]'),
@@ -300,8 +355,8 @@ export const useStore = create<BankState>((set, get) => {
             };
             const balance: UserBalance = {
               uid: simUid,
-              checking: 0.00,
-              savings: 0.00,
+              checking: 5000.00,
+              savings: 25000.00,
               updatedAt: new Date().toISOString()
             };
             const settingsObj: UserSecuritySettings = {
@@ -339,18 +394,18 @@ export const useStore = create<BankState>((set, get) => {
 
       // Real auth user
       try {
-        await signInWithEmailAndPassword(auth, email, pass);
-        // Rest handled by Auth change callback inside App.tsx
+        const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+        if (error) throw error;
         set({ loading: false });
-      } catch (e) {
-        set({ loading: false, errorMessage: e instanceof Error ? e.message : "Invalid credentials" });
+      } catch (e: any) {
+        set({ loading: false, errorMessage: e.message || "Invalid credentials" });
       }
     },
 
     logOutUser: async () => {
       get().clearSubscriptions();
       if (!get().simulationActive) {
-        await signOut(auth);
+        await supabase.auth.signOut();
       }
       set({
         user: null,
@@ -365,7 +420,6 @@ export const useStore = create<BankState>((set, get) => {
     },
 
     checkBiometrics: async () => {
-      // Simulate standard WebAuthn cryptographic touch loop
       return new Promise<boolean>((resolve) => {
         setTimeout(() => {
           set({ biometricAuthenticated: true });
@@ -374,7 +428,7 @@ export const useStore = create<BankState>((set, get) => {
       });
     },
 
-    toggleBiometrics: (enabled) => {
+    toggleBiometrics: async (enabled) => {
       const u = get().user;
       if (u) {
         const nextProfile = { ...u, biometricsEnabled: enabled };
@@ -382,9 +436,12 @@ export const useStore = create<BankState>((set, get) => {
         if (get().simulationActive) {
           localStorage.setItem(`sim_user_${u.uid}`, JSON.stringify(nextProfile));
         } else {
-          updateDoc(doc(db, 'users', u.uid), { biometricsEnabled: enabled }).catch(e => {
-            handleFirestoreError(e, OperationType.UPDATE, `users/${u.uid}`);
-          });
+          try {
+            const { error } = await supabase.from('users').update({ biometrics_enabled: enabled }).eq('id', u.uid);
+            if (error) throw error;
+          } catch (e) {
+            handleSupabaseError(e, OperationType.UPDATE, `users/${u.uid}`);
+          }
         }
       }
     },
@@ -394,92 +451,91 @@ export const useStore = create<BankState>((set, get) => {
       set({ listeners: [] });
     },
 
-    initRealtimeSubscriptions: (uid) => {
+    initRealtimeSubscriptions: async (uid) => {
       get().clearSubscriptions();
       set({ loading: true });
 
       if (get().simulationActive) {
-        // Fallback sim loaded instantly
-        set({ loading: false });
+        set({ loading: false, authChecked: true });
         return;
       }
 
-      // 1. Subscribe Profile
-      const unsubProfile = onSnapshot(doc(db, 'users', uid), (snapshot) => {
-        if (snapshot.exists()) {
-          set({ user: snapshot.data() as UserProfile });
-        }
-      }, (err) => handleFirestoreError(err, OperationType.GET, `users/${uid}`));
+      try {
+        // Fetch baseline records immediately
+        const [
+          resUser, 
+          resBal, 
+          resSet, 
+          resTx, 
+          resCards, 
+          resSavings, 
+          resNotifs
+        ] = await Promise.all([
+          supabase.from('users').select('*').eq('id', uid).maybeSingle(),
+          supabase.from('balances').select('*').eq('uid', uid).maybeSingle(),
+          supabase.from('settings').select('*').eq('uid', uid).maybeSingle(),
+          supabase.from('transactions').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
+          supabase.from('cards').select('*').eq('user_id', uid),
+          supabase.from('savings_goals').select('*').eq('user_id', uid),
+          supabase.from('notifications').select('*').eq('user_id', uid).order('created_at', { ascending: false })
+        ]);
 
-      // 2. Subscribe Balance
-      const unsubBalance = onSnapshot(doc(db, 'balances', uid), (snapshot) => {
-        if (snapshot.exists()) {
-          set({ balance: snapshot.data() as UserBalance });
-        }
-      }, (err) => handleFirestoreError(err, OperationType.GET, `balances/${uid}`));
+        if (resUser.data) set({ user: mapUserFromDb(resUser.data) });
+        if (resBal.data) set({ balance: mapBalanceFromDb(resBal.data) });
+        if (resSet.data) set({ settings: mapSettingsFromDb(resSet.data) });
+        if (resTx.data) set({ transactions: resTx.data.map(mapTransactionFromDb) });
+        if (resCards.data) set({ cards: resCards.data.map(mapCardFromDb) });
+        if (resSavings.data) set({ savings: resSavings.data.map(mapSavingsFromDb) });
+        if (resNotifs.data) set({ notifications: resNotifs.data.map(mapNotificationFromDb) });
 
-      // 3. Subscribe Settings
-      const unsubSettings = onSnapshot(doc(db, 'settings', uid), (snapshot) => {
-        if (snapshot.exists()) {
-          set({ settings: snapshot.data() as UserSecuritySettings });
-        }
-      }, (err) => handleFirestoreError(err, OperationType.GET, `settings/${uid}`));
+        set({ authChecked: true, loading: false });
 
-      // 4. Subscribe Transactions Feed
-      const txQuery = query(collection(db, 'transactions'), where('userId', '==', uid));
-      const unsubTransactions = onSnapshot(txQuery, (snapshot) => {
-        const txs: BankTransaction[] = [];
-        snapshot.forEach((snap) => {
-          txs.push(snap.data() as BankTransaction);
-        });
-        // Sort newest first
-        txs.sort((a,b) => b.createdAt.localeCompare(a.createdAt));
-        set({ transactions: txs });
-      }, (err) => handleFirestoreError(err, OperationType.LIST, 'transactions'));
+        // Build continuous Postgres changes listener
+        const mainChannel = supabase.channel(`realtime_db_${uid}`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'users', filter: `id=eq.${uid}` }, (payload) => {
+            if (payload.eventType === 'DELETE') {
+              get().logOutUser();
+            } else if (payload.new) {
+              set({ user: mapUserFromDb(payload.new) });
+            }
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'balances', filter: `uid=eq.${uid}` }, (payload) => {
+            if (payload.new) {
+              set({ balance: mapBalanceFromDb(payload.new) });
+            }
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'settings', filter: `uid=eq.${uid}` }, (payload) => {
+            if (payload.new) {
+              set({ settings: mapSettingsFromDb(payload.new) });
+            }
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${uid}` }, async () => {
+            const { data } = await supabase.from('transactions').select('*').eq('user_id', uid).order('created_at', { ascending: false });
+            if (data) set({ transactions: data.map(mapTransactionFromDb) });
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'cards', filter: `user_id=eq.${uid}` }, async () => {
+            const { data } = await supabase.from('cards').select('*').eq('user_id', uid);
+            if (data) set({ cards: data.map(mapCardFromDb) });
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'savings_goals', filter: `user_id=eq.${uid}` }, async () => {
+            const { data } = await supabase.from('savings_goals').select('*').eq('user_id', uid);
+            if (data) set({ savings: data.map(mapSavingsFromDb) });
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` }, async () => {
+            const { data } = await supabase.from('notifications').select('*').eq('user_id', uid).order('created_at', { ascending: false });
+            if (data) set({ notifications: data.map(mapNotificationFromDb) });
+          })
+          .subscribe();
 
-      // 5. Subscribe Cards Feed
-      const cardsQuery = query(collection(db, 'cards'), where('userId', '==', uid));
-      const unsubCards = onSnapshot(cardsQuery, (snapshot) => {
-        const cards: VirtualCard[] = [];
-        snapshot.forEach((snap) => {
-          cards.push(snap.data() as VirtualCard);
-        });
-        set({ cards });
-      }, (err) => handleFirestoreError(err, OperationType.LIST, 'cards'));
+        const unsubFn = () => {
+          mainChannel.unsubscribe();
+        };
 
-      // 6. Subscribe Savings goals
-      const savingsQuery = query(collection(db, 'savings'), where('userId', '==', uid));
-      const unsubSavings = onSnapshot(savingsQuery, (snapshot) => {
-        const goals: SavingsGoal[] = [];
-        snapshot.forEach((snap) => {
-          goals.push(snap.data() as SavingsGoal);
-        });
-        set({ savings: goals });
-      }, (err) => handleFirestoreError(err, OperationType.LIST, 'savings'));
+        set({ listeners: [unsubFn] });
 
-      // 7. Subscribe Notifications
-      const notifsQuery = query(collection(db, 'notifications'), where('userId', '==', uid));
-      const unsubNotifs = onSnapshot(notifsQuery, (snapshot) => {
-        const list: BankNotification[] = [];
-        snapshot.forEach((snap) => {
-          list.push(snap.data() as BankNotification);
-        });
-        list.sort((a,b) => b.createdAt.localeCompare(a.createdAt));
-        set({ notifications: list });
-      }, (err) => handleFirestoreError(err, OperationType.LIST, 'notifications'));
-
-      set({
-        listeners: [
-          unsubProfile, 
-          unsubBalance, 
-          unsubSettings, 
-          unsubTransactions, 
-          unsubCards, 
-          unsubSavings, 
-          unsubNotifs
-        ],
-        loading: false
-      });
+      } catch (err: any) {
+        set({ loading: false, authChecked: true, errorMessage: err.message || "Sync ledger link drop" });
+      }
     },
 
     // --- Core Financial Methods ---
@@ -519,11 +575,10 @@ export const useStore = create<BankState>((set, get) => {
       const newChecking = currentBalance.checking - amount;
 
       if (get().simulationActive) {
-        // simulation write
+        // Simulation path
         const updatedBalance = { ...currentBalance, checking: newChecking, updatedAt: new Date().toISOString() };
         const updatedTxs = [txSent, ...get().transactions];
         
-        // Notify
         const notif: BankNotification = {
           id: 'n_' + Math.random().toString(36).substring(2, 10),
           userId: userObj.uid,
@@ -548,16 +603,22 @@ export const useStore = create<BankState>((set, get) => {
         return;
       }
 
-      // Real auth post
+      // Real auth post via Supabase transactional entities updates
       try {
-        await setDoc(doc(db, 'transactions', txSent.id), txSent);
-        await updateDoc(doc(db, 'balances', userObj.uid), {
-          checking: newChecking,
-          updatedAt: new Date().toISOString()
-        });
+        // Post transaction record
+        const { error: tErr } = await supabase.from('transactions').insert(mapTransactionToDb(txSent));
+        if (tErr) throw tErr;
 
+        // Deduct sender balance
+        const { error: bErr } = await supabase.from('balances').update({
+          checking: newChecking,
+          updated_at: new Date().toISOString()
+        }).eq('uid', userObj.uid);
+        if (bErr) throw bErr;
+
+        // Post dispatch notification
         const notifId = 'notif_dispatch_' + Math.random().toString(36).substring(2, 10);
-        await setDoc(doc(db, 'notifications', notifId), {
+        const notif: BankNotification = {
           id: notifId,
           userId: userObj.uid,
           title: 'Transfer Dispatched',
@@ -565,10 +626,58 @@ export const useStore = create<BankState>((set, get) => {
           isRead: false,
           type: 'success',
           createdAt: new Date().toISOString()
-        });
+        };
+        await supabase.from('notifications').insert(mapNotificationToDb(notif));
+
+        // Inter-account relational trigger: find system user matching recipient email
+        const { data: recipientUser } = await supabase.from('users').select('id').eq('email', recipientEmail).maybeSingle();
+        if (recipientUser) {
+          const rUid = recipientUser.id;
+          
+          // Get recipient balance record
+          const { data: rBalData } = await supabase.from('balances').select('*').eq('uid', rUid).maybeSingle();
+          if (rBalData) {
+            const currentRBal = mapBalanceFromDb(rBalData);
+            const nextRChecking = currentRBal.checking + amount;
+            
+            // Increment recipient balance checking
+            await supabase.from('balances').update({
+              checking: nextRChecking,
+              updated_at: new Date().toISOString()
+            }).eq('uid', rUid);
+
+            // Insert matching transaction incoming ledger
+            const txReceived: BankTransaction = {
+              id: 'tx_r_' + Math.random().toString(36).substring(2, 10),
+              userId: rUid,
+              amount,
+              type: TransactionType.TRANSFER_RECEIVED,
+              category: 'Transfers',
+              merchant: `Inward wire from ${userObj.firstName} ${userObj.lastName}`,
+              senderEmail: userObj.email,
+              createdAt: new Date().toISOString(),
+              status: TransactionStatus.COMPLETED
+            };
+            await supabase.from('transactions').insert(mapTransactionToDb(txReceived));
+
+            // Publish inward transfer notification
+            const incomingNotifId = 'notif_inc_' + Math.random().toString(36).substring(2, 10);
+            const incomingNotif: BankNotification = {
+              id: incomingNotifId,
+              userId: rUid,
+              title: 'Wire Credits Cleared',
+              message: `You received a matching wire of $${amount.toFixed(2)} from ${userObj.firstName} ${userObj.lastName}.`,
+              isRead: false,
+              type: 'success',
+              createdAt: new Date().toISOString()
+            };
+            await supabase.from('notifications').insert(mapNotificationToDb(incomingNotif));
+          }
+        }
+
         set({ loading: false });
-      } catch (err) {
-        set({ loading: false, errorMessage: err instanceof Error ? err.message : 'Error transferring funds' });
+      } catch (err: any) {
+        set({ loading: false, errorMessage: err.message || 'Error transferring funds' });
       }
     },
 
@@ -621,14 +730,15 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await updateDoc(doc(db, 'balances', u.uid), {
+        await supabase.from('balances').update({
           [target]: updatedVal,
-          updatedAt: new Date().toISOString()
-        });
-        await setDoc(doc(db, 'transactions', newTx.id), newTx);
+          updated_at: new Date().toISOString()
+        }).eq('uid', u.uid);
+
+        await supabase.from('transactions').insert(mapTransactionToDb(newTx));
 
         const notifId = 'notif_dep_' + Math.random().toString(36).substring(2,10);
-        await setDoc(doc(db, 'notifications', notifId), {
+        const notif: BankNotification = {
           id: notifId,
           userId: u.uid,
           title: 'External Deposit Cleared',
@@ -636,9 +746,10 @@ export const useStore = create<BankState>((set, get) => {
           isRead: false,
           type: 'success',
           createdAt: new Date().toISOString()
-        });
+        };
+        await supabase.from('notifications').insert(mapNotificationToDb(notif));
       } catch (e) {
-        handleFirestoreError(e, OperationType.WRITE, `balances/${u.uid}`);
+        handleSupabaseError(e, OperationType.WRITE, `balances/${u.uid}`);
       }
     },
 
@@ -669,9 +780,9 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await setDoc(doc(db, 'cards', newCard.id), newCard);
+        await supabase.from('cards').insert(mapCardToDb(newCard));
       } catch (e) {
-        handleFirestoreError(e, OperationType.CREATE, `cards/${newCard.id}`);
+        handleSupabaseError(e, OperationType.CREATE, `cards/${newCard.id}`);
       }
     },
 
@@ -688,9 +799,9 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await updateDoc(doc(db, 'cards', cardId), { isFrozen: nextFrozen });
+        await supabase.from('cards').update({ is_frozen: nextFrozen }).eq('id', cardId);
       } catch (e) {
-        handleFirestoreError(e, OperationType.UPDATE, `cards/${cardId}`);
+        handleSupabaseError(e, OperationType.UPDATE, `cards/${cardId}`);
       }
     },
 
@@ -703,9 +814,9 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await updateDoc(doc(db, 'cards', cardId), { spendingLimit: limit });
+        await supabase.from('cards').update({ spending_limit: limit }).eq('id', cardId);
       } catch (e) {
-        handleFirestoreError(e, OperationType.UPDATE, `cards/${cardId}`);
+        handleSupabaseError(e, OperationType.UPDATE, `cards/${cardId}`);
       }
     },
 
@@ -733,9 +844,9 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await setDoc(doc(db, 'savings', goal.id), goal);
+        await supabase.from('savings_goals').insert(mapSavingsToDb(goal));
       } catch (e) {
-        handleFirestoreError(e, OperationType.CREATE, `savings/${goal.id}`);
+        handleSupabaseError(e, OperationType.CREATE, `savings_goals/${goal.id}`);
       }
     },
 
@@ -789,15 +900,15 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await updateDoc(doc(db, 'savings', goalId), { currentAmount: nextGoalVal });
-        await updateDoc(doc(db, 'balances', u.uid), {
+        await supabase.from('savings_goals').update({ current_amount: nextGoalVal }).eq('id', goalId);
+        await supabase.from('balances').update({
           checking: nextChecking,
           savings: nextSavings,
-          updatedAt: new Date().toISOString()
-        });
-        await setDoc(doc(db, 'transactions', customTx.id), customTx);
+          updated_at: new Date().toISOString()
+        }).eq('uid', u.uid);
+        await supabase.from('transactions').insert(mapTransactionToDb(customTx));
       } catch (e) {
-        handleFirestoreError(e, OperationType.UPDATE, `savings/${goalId}`);
+        handleSupabaseError(e, OperationType.UPDATE, `savings_goals/${goalId}`);
       }
     },
 
@@ -816,12 +927,12 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await updateDoc(doc(db, 'savings', goalId), {
-          autoSaveEnabled: nextAuto,
-          autoSavePercentage: percentage
-        });
+        await supabase.from('savings_goals').update({
+          auto_save_enabled: nextAuto,
+          auto_save_percentage: percentage
+        }).eq('id', goalId);
       } catch (e) {
-        handleFirestoreError(e, OperationType.UPDATE, `savings/${goalId}`);
+        handleSupabaseError(e, OperationType.UPDATE, `savings_goals/${goalId}`);
       }
     },
 
@@ -834,9 +945,9 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await updateDoc(doc(db, 'notifications', id), { isRead: true });
+        await supabase.from('notifications').update({ is_read: true }).eq('id', id);
       } catch (e) {
-        handleFirestoreError(e, OperationType.UPDATE, `notifications/${id}`);
+        handleSupabaseError(e, OperationType.UPDATE, `notifications/${id}`);
       }
     },
 
@@ -852,12 +963,12 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await updateDoc(doc(db, 'users', u.uid), {
-          firstName: first,
-          lastName: last
-        });
+        await supabase.from('users').update({
+          first_name: first,
+          last_name: last
+        }).eq('id', u.uid);
       } catch (e) {
-        handleFirestoreError(e, OperationType.UPDATE, `users/${u.uid}`);
+        handleSupabaseError(e, OperationType.UPDATE, `users/${u.uid}`);
       }
     },
 
@@ -869,13 +980,11 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        const u = auth.currentUser;
-        if (u) {
-          await updatePassword(u, pass);
-        }
+        const { error } = await supabase.auth.updateUser({ password: pass });
+        if (error) throw error;
         set({ loading: false });
-      } catch (e) {
-        set({ loading: false, errorMessage: e instanceof Error ? e.message : 'Error modifying database password' });
+      } catch (e: any) {
+        set({ loading: false, errorMessage: e.message || 'Error modifying database password' });
       }
     },
 
@@ -891,9 +1000,24 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await updateDoc(doc(db, 'settings', s.uid), { [key]: val });
+        await supabase.from('settings').update({ [mapSettingsToDb({ [key]: val } as any) as any]: val }).eq('uid', s.uid);
+        
+        // Generalize updating setting variables dynamically
+        const dbKeyMapping: Record<string, string> = {
+          faceIdEnabled: 'face_id_enabled',
+          webAuthnConfigured: 'web_authn_configured',
+          pushNotifications: 'push_notifications',
+          emailStatements: 'email_statements',
+          twoFactorEnabled: 'two_factor_enabled',
+          theme: 'theme'
+        };
+
+        const dbCol = dbKeyMapping[key];
+        if (dbCol) {
+          await supabase.from('settings').update({ [dbCol]: val }).eq('uid', s.uid);
+        }
       } catch (e) {
-        handleFirestoreError(e, OperationType.UPDATE, `settings/${s.uid}`);
+        handleSupabaseError(e, OperationType.UPDATE, `settings/${s.uid}`);
       }
     },
 
@@ -901,7 +1025,6 @@ export const useStore = create<BankState>((set, get) => {
 
     adminLoadUsers: async () => {
       if (get().simulationActive) {
-        // Mock list of registry accounts from storage keys or default profiles
         const mockAccounts: UserProfile[] = [
           {
             uid: 'sim_demo',
@@ -934,7 +1057,7 @@ export const useStore = create<BankState>((set, get) => {
             email: 'liz@sterlingcaps.io',
             isVerified: true,
             isAdmin: false,
-            isFrozen: true, // Initially frozen user to demonstrate freeze UX
+            isFrozen: true,
             isSuspended: false,
             biometricsEnabled: false,
             createdAt: new Date(Date.now() - 15 * 24 * 3600 * 1000).toISOString()
@@ -944,20 +1067,14 @@ export const useStore = create<BankState>((set, get) => {
         return;
       }
 
-      // Real auth fetch user indices (Note: normally requires node side API functions.
-      // But we can pull records from users collection if logged in as Admin using Firestore queries).
       try {
-        // Query users collection directly
-        const usersCol = collection(db, 'users');
-        onSnapshot(usersCol, (snap) => {
-          const list: UserProfile[] = [];
-          snap.forEach((docSnap) => {
-            list.push(docSnap.data() as UserProfile);
-          });
-          set({ usersList: list });
-        });
+        const { data, error } = await supabase.from('users').select('*');
+        if (error) throw error;
+        if (data) {
+          set({ usersList: data.map(mapUserFromDb) });
+        }
       } catch (e) {
-        console.error("Administrative profiles loader failed. Missing privileges.", e);
+        console.error("Administrative profiles loader failed.", e);
       }
     },
 
@@ -976,15 +1093,12 @@ export const useStore = create<BankState>((set, get) => {
       };
 
       if (get().simulationActive) {
-        // Update user balances in sim store
         const targetBal = { uid: userId, checking, savings, updatedAt: new Date().toISOString() };
         localStorage.setItem(`sim_balance_${userId}`, JSON.stringify(targetBal));
         
-        // Push admin log
         const nextLogs = [log, ...get().adminLogs];
         localStorage.setItem('sim_admin_logs', JSON.stringify(nextLogs));
 
-        // Push notify to target customer
         const notif: BankNotification = {
           id: 'n_a_' + Math.random().toString(36).substring(2,10),
           userId,
@@ -999,7 +1113,6 @@ export const useStore = create<BankState>((set, get) => {
 
         set({ adminLogs: nextLogs });
         
-        // Refresher triggers
         if (get().user?.uid === userId) {
           set({ balance: targetBal, notifications: [notif, ...get().notifications] });
         }
@@ -1007,15 +1120,16 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await updateDoc(doc(db, 'balances', userId), {
+        await supabase.from('balances').update({
           checking,
           savings,
-          updatedAt: new Date().toISOString()
-        });
-        await setDoc(doc(db, 'admin_logs', logId), log);
+          updated_at: new Date().toISOString()
+        }).eq('uid', userId);
+
+        await supabase.from('admin_logs').insert(mapLogToDb(log));
 
         const notifId = 'notif_adj_' + Math.random().toString(36).substring(2,10);
-        await setDoc(doc(db, 'notifications', notifId), {
+        const notifObj: BankNotification = {
           id: notifId,
           userId,
           title: 'Account Ledger Adjusted',
@@ -1023,9 +1137,10 @@ export const useStore = create<BankState>((set, get) => {
           isRead: false,
           type: 'alert',
           createdAt: new Date().toISOString()
-        });
+        };
+        await supabase.from('notifications').insert(mapNotificationToDb(notifObj));
       } catch (e) {
-        handleFirestoreError(e, OperationType.UPDATE, `balances/${userId}`);
+        handleSupabaseError(e, OperationType.UPDATE, `balances/${userId}`);
       }
     },
 
@@ -1071,10 +1186,10 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await setDoc(doc(db, 'transactions', txId), transaction);
-        await setDoc(doc(db, 'admin_logs', logId), log);
+        await supabase.from('transactions').insert(mapTransactionToDb(transaction));
+        await supabase.from('admin_logs').insert(mapLogToDb(log));
       } catch (e) {
-        handleFirestoreError(e, OperationType.CREATE, `transactions/${txId}`);
+        handleSupabaseError(e, OperationType.CREATE, `transactions/${txId}`);
       }
     },
 
@@ -1091,11 +1206,9 @@ export const useStore = create<BankState>((set, get) => {
       };
 
       if (get().simulationActive) {
-        // Adjust usersList
         const updatedList = get().usersList.map(u => u.uid === userId ? { ...u, isFrozen: frozen } : u);
         set({ usersList: updatedList });
 
-        // Update target profile
         const targetStored = localStorage.getItem(`sim_user_${userId}`);
         if (targetStored) {
           const parsed = JSON.parse(targetStored);
@@ -1113,10 +1226,10 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await updateDoc(doc(db, 'users', userId), { isFrozen: frozen });
-        await setDoc(doc(db, 'admin_logs', logId), log);
+        await supabase.from('users').update({ is_frozen: frozen }).eq('id', userId);
+        await supabase.from('admin_logs').insert(mapLogToDb(log));
       } catch (e) {
-        handleFirestoreError(e, OperationType.UPDATE, `users/${userId}`);
+        handleSupabaseError(e, OperationType.UPDATE, `users/${userId}`);
       }
     },
 
@@ -1133,11 +1246,9 @@ export const useStore = create<BankState>((set, get) => {
       };
 
       if (get().simulationActive) {
-        // Adjust usersList
         const updatedList = get().usersList.map(u => u.uid === userId ? { ...u, isSuspended: suspended } : u);
         set({ usersList: updatedList });
 
-        // Update target profile
         const targetStored = localStorage.getItem(`sim_user_${userId}`);
         if (targetStored) {
           const parsed = JSON.parse(targetStored);
@@ -1155,10 +1266,10 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await updateDoc(doc(db, 'users', userId), { isSuspended: suspended });
-        await setDoc(doc(db, 'admin_logs', logId), log);
+        await supabase.from('users').update({ is_suspended: suspended }).eq('id', userId);
+        await supabase.from('admin_logs').insert(mapLogToDb(log));
       } catch (e) {
-        handleFirestoreError(e, OperationType.UPDATE, `users/${userId}`);
+        handleSupabaseError(e, OperationType.UPDATE, `users/${userId}`);
       }
     },
 
@@ -1203,10 +1314,10 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        await setDoc(doc(db, 'notifications', notifId), notif);
-        await setDoc(doc(db, 'admin_logs', logId), log);
+        await supabase.from('notifications').insert(mapNotificationToDb(notif));
+        await supabase.from('admin_logs').insert(mapLogToDb(log));
       } catch (e) {
-        handleFirestoreError(e, OperationType.CREATE, `notifications/${notifId}`);
+        handleSupabaseError(e, OperationType.CREATE, `notifications/${notifId}`);
       }
     },
 
@@ -1234,15 +1345,28 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       try {
-        const q = query(collection(db, 'admin_logs'));
-        onSnapshot(q, (snap) => {
-          const logs: AdminLog[] = [];
-          snap.forEach(docSnap => {
-            logs.push(docSnap.data() as AdminLog);
-          });
-          logs.sort((a,b) => b.timestamp.localeCompare(a.timestamp));
-          set({ adminLogs: logs });
-        });
+        const { data, error } = await supabase.from('admin_logs').select('*').order('timestamp', { ascending: false });
+        if (error) throw error;
+        if (data) {
+          set({ adminLogs: data.map(mapLogFromDb) });
+        }
+
+        // Subscribe to logs updates
+        const logsChannel = supabase.channel('admin_logs_realtime')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_logs' }, async () => {
+            const { data: fresh } = await supabase.from('admin_logs').select('*').order('timestamp', { ascending: false });
+            if (fresh) {
+              set({ adminLogs: fresh.map(mapLogFromDb) });
+            }
+          })
+          .subscribe();
+
+        const unsubFn = () => {
+          logsChannel.unsubscribe();
+        };
+
+        set({ listeners: [...get().listeners, unsubFn] });
+
       } catch (e) {
         console.error("Administrative auditing records loading rejected.", e);
       }

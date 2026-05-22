@@ -232,14 +232,14 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                     : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                 }`}
               >
-                {simulationActive ? 'Local Simulator' : 'Real Google Firebase'}
+                {simulationActive ? 'Local Simulator' : 'Real Postgres Supabase'}
               </button>
             </div>
             
             <p className="text-[10px] text-slate-600 leading-normal text-left px-1">
               {simulationActive 
                 ? 'Offline Simulator mode is active. You will be logged into a fully responsive local wallet bypasses cloud connection blocks.' 
-                : 'Real Firebase mode matches network calls to Firestore. If cloud database fails to sync, toggle Sandbox Simulator in landing view.'}
+                : 'Real Supabase mode matches network calls to PostgreSQL. If cloud database fails to sync, toggle Sandbox Simulator in landing view.'}
             </p>
 
             {/* QUICK FILL DEMO FOR REVIEWER */}

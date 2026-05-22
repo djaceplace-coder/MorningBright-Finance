@@ -32,9 +32,17 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 
 export default function App() {
-  const { user, settings, simulationActive, setSimulationMode, logOutUser } = useStore();
+  const { user, settings, simulationActive, setSimulationMode, logOutUser, initAuthListener } = useStore();
   const [currentTab, setCurrentTab] = useState('home');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Startup persistent auth session restore effect
+  React.useEffect(() => {
+    const unsub = initAuthListener();
+    return () => {
+      unsub?.();
+    };
+  }, [initAuthListener]);
 
   // Theme Sync effect (Light / Dark / System)
   React.useEffect(() => {

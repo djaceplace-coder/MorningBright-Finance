@@ -91,7 +91,7 @@ export function LegalPage({ initialTab = 'privacy', onClose }: LegalPageProps) {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-white">2. Data Acquisition Standards</h3>
                   <p className="text-xs leading-relaxed text-slate-300">
-                    We collect only relevant identity details required for U.S. Federal compliance (KYC/AML rules). This includes your legal name, certified email addresses, and secure authentication metadata. Transaction sub-ledgers are cryptographically sealed in Firebase Firestore and isolated per account index.
+                    We collect only relevant identity details required for U.S. Federal compliance (KYC/AML rules). This includes your legal name, certified email addresses, and secure authentication metadata. Transaction sub-ledgers are cryptographically sealed in Supabase PostgreSQL database tables and isolated per account index.
                   </p>
                 </section>
 
@@ -155,7 +155,7 @@ export function LegalPage({ initialTab = 'privacy', onClose }: LegalPageProps) {
                   <ul className="list-disc pl-5 text-xs space-y-2 leading-relaxed">
                     <li><strong className="text-white">localStorage (`mb_theme`):</strong> Remembers your dark/light settings.</li>
                     <li><strong className="text-white">localStorage (`mb_simulation`):</strong> Declares terminal execution environments.</li>
-                    <li><strong className="text-white">Firebase Auth Cookies:</strong> Safely persists your login token.</li>
+                    <li><strong className="text-white">Supabase Auth Sessions:</strong> Safely persists your login token.</li>
                   </ul>
                 </section>
               </article>
@@ -172,7 +172,7 @@ export function LegalPage({ initialTab = 'privacy', onClose }: LegalPageProps) {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-white">1. Zero-Trust Access Control</h3>
                   <p className="text-xs leading-relaxed text-slate-300">
-                    Every ledger query, wire dispatch, and card toggle is validated server-side. Firebase security rules enforce attributes matching `request.auth.uid == resource.data.userId` instantly, preventing cross-profile security gaps.
+                    Every ledger query, wire dispatch, and card toggle is validated server-side. Supabase Row-Level Security (RLS) policies enforce attributes matching `auth.uid() = user_id` instantly, preventing cross-profile security gaps.
                   </p>
                 </section>
 
