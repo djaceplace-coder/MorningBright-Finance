@@ -24,6 +24,10 @@ create table public.users (
 alter table public.users enable row level security;
 
 -- Policies for Users
+create policy "Users can insert their own profile" 
+    on public.users for insert 
+    with check (auth.uid() = id);
+
 create policy "Users can select their own profile" 
     on public.users for select 
     using (auth.uid() = id);
@@ -62,6 +66,10 @@ create table public.balances (
 alter table public.balances enable row level security;
 
 -- Policies for Balances
+create policy "Users can initialize balances" 
+    on public.balances for insert 
+    with check (auth.uid() = uid);
+
 create policy "Users can query their own balance sheets" 
     on public.balances for select 
     using (auth.uid() = uid);

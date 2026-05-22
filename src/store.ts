@@ -243,8 +243,7 @@ export const useStore = create<BankState>((set, get) => {
         }
 
         set({ loading: false });
-        // The subscription hook handles remaining layout changes
-        get().initRealtimeSubscriptions(data.user.id);
+        // The subscription hook handles remaining layout changes automatically via onAuthStateChange
       } catch (e: any) {
         set({ loading: false, errorMessage: e.message || "Error during secure registration" });
       }
@@ -306,6 +305,7 @@ export const useStore = create<BankState>((set, get) => {
     clearSubscriptions: () => {
       get().listeners.forEach(unsub => unsub());
       set({ listeners: [] });
+      supabase.removeAllChannels();
     },
 
     initRealtimeSubscriptions: async (uid) => {
@@ -334,9 +334,65 @@ export const useStore = create<BankState>((set, get) => {
           supabase.from('notifications').select('*').eq('user_id', uid).order('created_at', { ascending: false })
         ]);
 
-        if (resUser.data) set({ user: mapUserFromDb(resUser.data) });
-        if (resBal.data) set({ balance: mapBalanceFromDb(resBal.data) });
-        if (resSet.data) set({ settings: mapSettingsFromDb(resSet.data) });
+        let userRecord = resUser.data;
+        let balanceRecord = resBal.data;
+        let settingsRecord = resSet.data;
+
+        // Auto-recover disconnected auth users (if RLS blocked insert during sign up)
+        if (!userRecord) {
+          const { data: authData } = await supabase.auth.getUser();
+          if (authData.user) {
+            const email = authData.user.email || '';
+            const first = authData.user.user_metadata?.firstName || 'Valued';
+            const last = authData.user.user_metadata?.lastName || 'Client';
+            
+            const profile: UserProfile = {
+              uid: authData.user.id,
+              firstName: first,
+              lastName: last,
+              email,
+              isVerified: false, 
+              isAdmin: email === 'support@morningbrightfinance.com',
+              isFrozen: false,
+              isSuspended: false,
+              biometricsEnabled: false,
+              createdAt: new Date().toISOString()
+            };
+            
+            const balance: UserBalance = {
+              uid: authData.user.id,
+              checking: 0.00,
+              savings: 0.00,
+              updatedAt: new Date().toISOString()
+            };
+            
+            const settingsDoc: UserSecuritySettings = {
+               uid: authData.user.id,
+               faceIdEnabled: false,
+               webAuthnConfigured: false,
+               pushNotifications: true,
+               emailStatements: true,
+               twoFactorEnabled: false,
+               theme: 'system'
+            };
+
+            await supabase.from('users').insert(mapUserToDb(profile)).maybeSingle();
+            await supabase.from('balances').insert(mapBalanceToDb(balance)).maybeSingle();
+            await supabase.from('settings').insert(mapSettingsToDb(settingsDoc)).maybeSingle();
+            
+            // Re-fetch
+            const u = await supabase.from('users').select('*').eq('id', uid).maybeSingle();
+            userRecord = u.data;
+            const b = await supabase.from('balances').select('*').eq('uid', uid).maybeSingle();
+            balanceRecord = b.data;
+            const s = await supabase.from('settings').select('*').eq('uid', uid).maybeSingle();
+            settingsRecord = s.data;
+          }
+        }
+
+        if (userRecord) set({ user: mapUserFromDb(userRecord) });
+        if (balanceRecord) set({ balance: mapBalanceFromDb(balanceRecord) });
+        if (settingsRecord) set({ settings: mapSettingsFromDb(settingsRecord) });
         if (resTx.data) set({ transactions: resTx.data.map(mapTransactionFromDb) });
         if (resCards.data) set({ cards: resCards.data.map(mapCardFromDb) });
         if (resSavings.data) set({ savings: resSavings.data.map(mapSavingsFromDb) });
@@ -345,7 +401,8 @@ export const useStore = create<BankState>((set, get) => {
         set({ authChecked: true, loading: false });
 
         // Build continuous Postgres changes listener
-        const mainChannel = supabase.channel(`realtime_db_${uid}`)
+        const channelName = `realtime_db_${uid}_${Date.now()}`;
+        const mainChannel = supabase.channel(channelName)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'users', filter: `id=eq.${uid}` }, (payload) => {
             if (payload.eventType === 'DELETE') {
               get().logOutUser();
@@ -950,7 +1007,7 @@ export const useStore = create<BankState>((set, get) => {
         }
 
         // Subscribe to logs updates
-        const logsChannel = supabase.channel('admin_logs_realtime')
+        const logsChannel = supabase.channel(`admin_logs_realtime_${Date.now()}`)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_logs' }, async () => {
             const { data: fresh } = await supabase.from('admin_logs').select('*').order('timestamp', { ascending: false });
             if (fresh) {
