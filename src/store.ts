@@ -334,6 +334,8 @@ export const useStore = create<BankState>((set, get) => {
           supabase.from('notifications').select('*').eq('user_id', uid).order('created_at', { ascending: false })
         ]);
 
+        if (resUser.error) console.error("resUser fetch error:", resUser.error);
+        
         let userRecord = resUser.data;
         let balanceRecord = resBal.data;
         let settingsRecord = resSet.data;
@@ -376,9 +378,14 @@ export const useStore = create<BankState>((set, get) => {
                theme: 'system'
             };
 
-            await supabase.from('users').insert(mapUserToDb(profile)).maybeSingle();
-            await supabase.from('balances').insert(mapBalanceToDb(balance)).maybeSingle();
-            await supabase.from('settings').insert(mapSettingsToDb(settingsDoc)).maybeSingle();
+            const ins1 = await supabase.from('users').insert(mapUserToDb(profile)).maybeSingle();
+            if (ins1.error) console.error("users auto-insert error:", ins1.error);
+            
+            const ins2 = await supabase.from('balances').insert(mapBalanceToDb(balance)).maybeSingle();
+            if (ins2.error) console.error("balances auto-insert error:", ins2.error);
+            
+            const ins3 = await supabase.from('settings').insert(mapSettingsToDb(settingsDoc)).maybeSingle();
+            if (ins3.error) console.error("settings auto-insert error:", ins3.error);
             
             // Re-fetch
             const u = await supabase.from('users').select('*').eq('id', uid).maybeSingle();
