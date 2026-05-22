@@ -106,3 +106,11 @@ export interface AdminLog {
   details: string;
   timestamp: string;
 }
+
+export interface Beneficiary {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  createdAt: string;
+}

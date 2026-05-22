@@ -13,9 +13,9 @@ import { MobileNav } from './components/MobileNav';
 import { DashboardView } from './components/DashboardView';
 import { CardsView } from './components/CardsView';
 import { TransfersView } from './components/TransfersView';
+import { BillsView } from './components/BillsView';
 import { SavingsView } from './components/SavingsView';
 import { SettingsView } from './components/SettingsView';
-import { AdminPanel } from './components/AdminPanel';
 import { 
   LogOut, 
   Menu, 
@@ -230,10 +230,10 @@ export default function App() {
                     />
                   )}
                   {currentTab === 'transfers' && <TransfersView />}
+                  {currentTab === 'bills' && <BillsView />}
                   {currentTab === 'cards' && <CardsView />}
                   {currentTab === 'savings' && <SavingsView />}
                   {currentTab === 'settings' && <SettingsView />}
-                  {currentTab === 'admin' && user?.isAdmin && <AdminPanel />}
                 </motion.div>
               </AnimatePresence>
             </main>

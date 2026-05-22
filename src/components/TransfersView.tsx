@@ -24,7 +24,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 
 export function TransfersView() {
-  const { balance, transactions, issueTransfer, loading, errorMessage, clearError } = useStore();
+  const { balance, transactions, issueTransfer, loading, errorMessage, clearError, beneficiaries } = useStore();
   const [recipientEmail, setRecipientEmail] = useState('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -36,14 +36,6 @@ export function TransfersView() {
 
   // Success display states
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  // Suggested payees list
-  const suggestedPayees = [
-    { name: 'Elizabeth Sterling', email: 'elizabeth@sterling.com' },
-    { name: 'Amara Okoye', email: 'amara@zenflow.co' },
-    { name: 'Marcus Sterling', email: 'marcus@sterlingcapital.com' },
-    { name: 'Devon Reynolds', email: 'devon@hyperscale.io' }
-  ];
 
   const totalChecking = balance?.checking || 0;
 
@@ -192,7 +184,7 @@ export function TransfersView() {
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
-              {suggestedPayees.map((payee) => (
+              {beneficiaries.map((payee) => (
                 <button
                   key={payee.email}
                   type="button"
@@ -203,6 +195,11 @@ export function TransfersView() {
                   <span className="block text-[8px] text-slate-500 truncate mt-0.5 font-mono lowercase">{payee.email}</span>
                 </button>
               ))}
+              {beneficiaries.length === 0 && (
+                <div className="col-span-2 p-4 text-center border border-dashed border-slate-200 dark:border-white/10 rounded-xl text-xs text-slate-500 italic">
+                  No saved beneficiaries yet.
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -114,6 +114,20 @@ create table public.transactions (
 
 alter table public.transactions enable row level security;
 
+create table public.beneficiaries (
+    id uuid default gen_random_uuid() primary key,
+    user_id uuid references public.users(id) on delete cascade not null,
+    name text not null,
+    email text not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.beneficiaries enable row level security;
+
+create policy "Users can select their own beneficiaries" 
+    on public.beneficiaries for select 
+    using (auth.uid() = user_id);
+
 -- Policies for Transactions
 create policy "Users can query their own transaction records" 
     on public.transactions for select 
@@ -316,3 +330,8 @@ create policy "Admins can chronicle events"
     ));
 
 -- Note: no updates or deletes permitted on audit logs to preserve institutional data forensics!
+
+-- Setup Realtime
+drop publication if exists supabase_realtime;
+create publication supabase_realtime;
+alter publication supabase_realtime add table public.users, public.balances, public.transactions, public.cards, public.savings_goals, public.notifications, public.settings, public.admin_logs, public.beneficiaries;

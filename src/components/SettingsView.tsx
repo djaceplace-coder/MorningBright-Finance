@@ -21,6 +21,7 @@ import {
   Laptop
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { supabase } from '../supabase';
 
 export function SettingsView() {
   const { user, settings, updateProfile, updateSettingsToggle, loading, errorMessage, clearError } = useStore();
@@ -92,7 +93,16 @@ export function SettingsView() {
 
   const handleVerificationRequest = async () => {
     setSuccessMsg(null);
-    setSuccessMsg("A secure verification credential dispatch link has been pushed to your email.");
+    if (!user?.email) return;
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: user.email,
+    });
+    if (error) {
+      setSuccessMsg(`Failed to send: ${error.message}`);
+    } else {
+      setSuccessMsg("A secure verification credential dispatch link has been pushed to your email.");
+    }
   };
 
   const isVerified = user?.isVerified || false;

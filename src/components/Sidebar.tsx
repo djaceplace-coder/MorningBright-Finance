@@ -34,6 +34,7 @@ export function Sidebar({ currentTab, onChangeTab }: SidebarProps) {
   const menuItems = [
     { id: 'home', label: 'Home', icon: <Home size={18} /> },
     { id: 'transfers', label: 'Transfers', icon: <ArrowLeftRight size={18} /> },
+    { id: 'bills', label: 'Bill Payments', icon: <Sparkles size={18} /> },
     { id: 'cards', label: 'Cards', icon: <CreditCard size={18} /> },
     { id: 'savings', label: 'Savings', icon: <Target size={18} /> },
     { id: 'settings', label: 'Settings', icon: <Settings size={18} /> },
@@ -139,21 +140,6 @@ export function Sidebar({ currentTab, onChangeTab }: SidebarProps) {
               <span>{item.label}</span>
             </button>
           ))}
- 
-          {/* PRIVILEGED ADMINISTRATIVE DASHBOARD */}
-          {user?.isAdmin && (
-            <button
-              onClick={() => onChangeTab('admin')}
-              className={`w-full h-11 px-3 rounded-lg flex items-center space-x-3 text-xs font-semibold uppercase tracking-wider transition-all pt-2 mt-4 border-t border-slate-200 dark:border-white/5 cursor-pointer ${
-                currentTab === 'admin' 
-                  ? 'bg-amber-500/10 border-l-2 border-amber-500 text-amber-600 dark:text-amber-400 font-bold' 
-                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-white/5 hover:text-slate-950 hover:dark:text-white'
-              }`}
-            >
-              <ShieldAlert size={18} className={currentTab === 'admin' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
-              <span>Admin Console</span>
-            </button>
-          )}
         </nav>
       </div>
  

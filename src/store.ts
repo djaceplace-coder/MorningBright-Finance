@@ -36,14 +36,55 @@ import {
   UserSecuritySettings, 
   AdminLog,
   TransactionType,
-  TransactionStatus
+  TransactionStatus,
+  Beneficiary
 } from './types';
 
-// Initial interactive assets for mock session or fallback sandbox environment
-const INITIAL_TRANSACTIONS = (userId: string): BankTransaction[] => [];
-const INITIAL_CARDS = (userId: string): VirtualCard[] => [];
+// Helper to generate random 16 digit card
+const randomCard = () => Array.from({length: 4}, () => Math.floor(1000 + Math.random() * 9000).toString()).join(' ');
+const randomDate = () => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() + Math.floor(Math.random() * 3 + 1));
+  date.setMonth(Math.floor(Math.random() * 12));
+  return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)}`;
+}
+
+// Initial interactive assets for onboarding environment
+const INITIAL_TRANSACTIONS = (userId: string): BankTransaction[] => [
+  {
+    id: crypto.randomUUID(),
+    userId,
+    amount: 500,
+    type: TransactionType.DEPOSIT,
+    status: TransactionStatus.COMPLETED,
+    merchant: 'Opening Deposit',
+    category: 'Funding',
+    createdAt: new Date().toISOString() // Fixed timestamp -> createdAt
+  }
+];
+const INITIAL_CARDS = (userId: string, name: string): VirtualCard[] => [{
+  id: crypto.randomUUID(),
+  userId,
+  cardNumber: randomCard(),
+  cardholderName: name,
+  expiryDate: randomDate(),
+  cvv: Math.floor(100 + Math.random() * 900).toString(),
+  cardType: 'platinum',
+  spendingLimit: 5000,
+  spentThisMonth: 0,
+  isFrozen: false,
+  createdAt: new Date().toISOString()
+}];
 const INITIAL_SAVINGS = (userId: string): SavingsGoal[] => [];
-const INITIAL_NOTIFICATIONS = (userId: string): BankNotification[] => [];
+const INITIAL_NOTIFICATIONS = (userId: string): BankNotification[] => [{
+  id: crypto.randomUUID(),
+  userId,
+  title: 'Welcome to Morning Bright',
+  message: 'Your new digital banking account is ready. Your initial deposit has been credited and your virtual card is active.',
+  type: 'system',
+  isRead: false,
+  createdAt: new Date().toISOString()
+}];
 
 interface BankState {
   // Current user state
@@ -56,6 +97,7 @@ interface BankState {
   settings: UserSecuritySettings | null;
   adminLogs: AdminLog[];
   usersList: UserProfile[]; // Cache for Admin console views
+  beneficiaries: Beneficiary[];
   
   // App context flags
   loading: boolean;
@@ -119,6 +161,7 @@ export const useStore = create<BankState>((set, get) => {
     settings: null,
     adminLogs: [],
     usersList: [],
+    beneficiaries: [],
     
     loading: false,
     authChecked: false,
@@ -185,7 +228,14 @@ export const useStore = create<BankState>((set, get) => {
         });
 
         if (error) throw error;
-        if (!data.user) throw new Error("Credentials processing conflict.");
+        if (!data.user) throw new Error("Email may already be registered or unavailable if email security is enabled. Please try logging in.");
+
+        // If email confirmation is required, session will be null.
+        // We cannot insert records until the user verifies and signs in.
+        if (!data.session) {
+          set({ loading: false, errorMessage: 'Verification email sent. Please check your inbox and sign in.' });
+          return;
+        }
 
         // Provision initial relational records
         const profile: UserProfile = {
@@ -203,7 +253,7 @@ export const useStore = create<BankState>((set, get) => {
 
         const balance: UserBalance = {
           uid: data.user.id,
-          checking: 0.00,
+          checking: 500.00,
           savings: 0.00,
           updatedAt: new Date().toISOString()
         };
@@ -232,7 +282,7 @@ export const useStore = create<BankState>((set, get) => {
         for (const tx of INITIAL_TRANSACTIONS(data.user.id)) {
           await supabase.from('transactions').insert(mapTransactionToDb(tx));
         }
-        for (const card of INITIAL_CARDS(data.user.id)) {
+        for (const card of INITIAL_CARDS(data.user.id, `${first} ${last}`)) {
           await supabase.from('cards').insert(mapCardToDb(card));
         }
         for (const goal of INITIAL_SAVINGS(data.user.id)) {
@@ -323,7 +373,8 @@ export const useStore = create<BankState>((set, get) => {
           resTx, 
           resCards, 
           resSavings, 
-          resNotifs
+          resNotifs,
+          resBench
         ] = await Promise.all([
           supabase.from('users').select('*').eq('id', uid).maybeSingle(),
           supabase.from('balances').select('*').eq('uid', uid).maybeSingle(),
@@ -331,7 +382,8 @@ export const useStore = create<BankState>((set, get) => {
           supabase.from('transactions').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
           supabase.from('cards').select('*').eq('user_id', uid),
           supabase.from('savings_goals').select('*').eq('user_id', uid),
-          supabase.from('notifications').select('*').eq('user_id', uid).order('created_at', { ascending: false })
+          supabase.from('notifications').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
+          supabase.from('beneficiaries').select('*').eq('user_id', uid).order('created_at', { ascending: false })
         ]);
 
         if (resUser.error) console.error("resUser fetch error:", resUser.error);
@@ -363,7 +415,7 @@ export const useStore = create<BankState>((set, get) => {
             
             const balance: UserBalance = {
               uid: authData.user.id,
-              checking: 0.00,
+              checking: 500.00,
               savings: 0.00,
               updatedAt: new Date().toISOString()
             };
@@ -389,6 +441,20 @@ export const useStore = create<BankState>((set, get) => {
             const mappedSettings = mapSettingsToDb(settingsDoc);
             const ins3 = await supabase.from('settings').insert(mappedSettings).maybeSingle();
             if (ins3.error) console.error("settings auto-insert error:", ins3.error);
+
+            // Seed sub-records for recovered user
+            for (const tx of INITIAL_TRANSACTIONS(authData.user.id)) {
+              await supabase.from('transactions').insert(mapTransactionToDb(tx));
+            }
+            for (const card of INITIAL_CARDS(authData.user.id, `${first} ${last}`)) {
+              await supabase.from('cards').insert(mapCardToDb(card));
+            }
+            for (const goal of INITIAL_SAVINGS(authData.user.id)) {
+              await supabase.from('savings_goals').insert(mapSavingsToDb(goal));
+            }
+            for (const notif of INITIAL_NOTIFICATIONS(authData.user.id)) {
+              await supabase.from('notifications').insert(mapNotificationToDb(notif));
+            }
             
             // Re-fetch
             const u = await supabase.from('users').select('*').eq('id', uid).maybeSingle();
@@ -397,6 +463,16 @@ export const useStore = create<BankState>((set, get) => {
             balanceRecord = b.data || mappedBalance;
             const s = await supabase.from('settings').select('*').eq('uid', uid).maybeSingle();
             settingsRecord = s.data || mappedSettings;
+            
+            // Re-fetch other data as well
+            const recoveredTx = await supabase.from('transactions').select('*').eq('user_id', uid).order('created_at', { ascending: false });
+            if (recoveredTx.data) resTx.data = recoveredTx.data;
+            const recoveredCards = await supabase.from('cards').select('*').eq('user_id', uid);
+            if (recoveredCards.data) resCards.data = recoveredCards.data;
+            const recoveredSavings = await supabase.from('savings_goals').select('*').eq('user_id', uid);
+            if (recoveredSavings.data) resSavings.data = recoveredSavings.data;
+            const recoveredNotifs = await supabase.from('notifications').select('*').eq('user_id', uid).order('created_at', { ascending: false });
+            if (recoveredNotifs.data) resNotifs.data = recoveredNotifs.data;
           }
         }
 
@@ -407,6 +483,15 @@ export const useStore = create<BankState>((set, get) => {
         if (resCards.data) set({ cards: resCards.data.map(mapCardFromDb) });
         if (resSavings.data) set({ savings: resSavings.data.map(mapSavingsFromDb) });
         if (resNotifs.data) set({ notifications: resNotifs.data.map(mapNotificationFromDb) });
+        if (resBench.data) set({
+          beneficiaries: resBench.data.map((b: any) => ({
+            id: b.id,
+            userId: b.user_id,
+            name: b.name,
+            email: b.email,
+            createdAt: b.created_at
+          }))
+        });
 
         set({ authChecked: true, loading: false });
 
@@ -445,6 +530,18 @@ export const useStore = create<BankState>((set, get) => {
           .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${uid}` }, async () => {
             const { data } = await supabase.from('notifications').select('*').eq('user_id', uid).order('created_at', { ascending: false });
             if (data) set({ notifications: data.map(mapNotificationFromDb) });
+          })
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'beneficiaries', filter: `user_id=eq.${uid}` }, async () => {
+             const { data } = await supabase.from('beneficiaries').select('*').eq('user_id', uid).order('created_at', { ascending: false });
+             if (data) set({
+               beneficiaries: data.map((b) => ({
+                 id: b.id,
+                 userId: b.user_id,
+                 name: b.name,
+                 email: b.email,
+                 createdAt: b.created_at
+               }))
+             });
           })
           .subscribe();
 
