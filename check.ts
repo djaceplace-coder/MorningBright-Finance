@@ -7,8 +7,10 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.
 async function check() {
   const { data: auth, error: authErr } = await supabase.auth.signInWithPassword({
     email: 'djaceplace@gmail.com',
-    password: 'Password123!', // Let's see if we can just grab auth.uid without knowing password... Wait, we can't.
+    password: 'Password123!', // The user didn't give the password. We can't log in without it!
   });
+  console.log("Auth err:", authErr);
+
   console.log("Auth:", auth);
   let id = auth?.user?.id;
   if (!id) return;

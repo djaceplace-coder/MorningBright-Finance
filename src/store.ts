@@ -378,22 +378,25 @@ export const useStore = create<BankState>((set, get) => {
                theme: 'system'
             };
 
-            const ins1 = await supabase.from('users').insert(mapUserToDb(profile)).maybeSingle();
+            const mappedUser = mapUserToDb(profile);
+            const ins1 = await supabase.from('users').insert(mappedUser).maybeSingle();
             if (ins1.error) console.error("users auto-insert error:", ins1.error);
             
-            const ins2 = await supabase.from('balances').insert(mapBalanceToDb(balance)).maybeSingle();
+            const mappedBalance = mapBalanceToDb(balance);
+            const ins2 = await supabase.from('balances').insert(mappedBalance).maybeSingle();
             if (ins2.error) console.error("balances auto-insert error:", ins2.error);
             
-            const ins3 = await supabase.from('settings').insert(mapSettingsToDb(settingsDoc)).maybeSingle();
+            const mappedSettings = mapSettingsToDb(settingsDoc);
+            const ins3 = await supabase.from('settings').insert(mappedSettings).maybeSingle();
             if (ins3.error) console.error("settings auto-insert error:", ins3.error);
             
             // Re-fetch
             const u = await supabase.from('users').select('*').eq('id', uid).maybeSingle();
-            userRecord = u.data;
+            userRecord = u.data || mappedUser;
             const b = await supabase.from('balances').select('*').eq('uid', uid).maybeSingle();
-            balanceRecord = b.data;
+            balanceRecord = b.data || mappedBalance;
             const s = await supabase.from('settings').select('*').eq('uid', uid).maybeSingle();
-            settingsRecord = s.data;
+            settingsRecord = s.data || mappedSettings;
           }
         }
 
