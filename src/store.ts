@@ -234,19 +234,19 @@ export const useStore = create<BankState>((set, get) => {
         });
 
         if (error) {
-          // If already registered, sign them in automatically if possible, or just throw clear error
+          console.error("Supabase signUp error:", error);
           if (error.message.includes('already registered')) {
             throw new Error("This email is already registered. Please sign in instead.");
           }
-          throw error;
+          throw new Error(`Register error: ${error.message}`);
         }
         
         if (data.user && data.user.identities && data.user.identities.length === 0) {
           throw new Error("This email is already registered. Please sign in instead.");
         }
         
-        if (!data.user) {
-          throw new Error("Failed to create account. Please try again.");
+        if (!data || !data.user) {
+          throw new Error(`Failed to create account. No user returned. (Trace: raw data=${JSON.stringify(data)})`);
         }
 
         // If email confirmation is required, session will be null.

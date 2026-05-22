@@ -48,12 +48,19 @@ export function AuthModal({ isOpen, onClose, onSuccess, initialIsSignUp = false 
     }
 
     // If login succeeds and no error is thrown, the App will automatically load the layout
-    const nextError = useStore.getState().errorMessage;
-    if (!nextError) {
+    const state = useStore.getState();
+    const nextError = state.errorMessage;
+    const nextSuccess = state.successMessage;
+    
+    if (!nextError && !nextSuccess) {
       onClose();
       if (onSuccess) {
         onSuccess();
       }
+    } else if (nextSuccess && isSignUp) {
+      // Keep it open for them to view the success message
+      // Note: we don't automatically close if email confirm is required
+      // If email confirm is NOT required, the App.tsx onAuthStateChange will automatically switch out the view and hide the modal!
     }
   };
 
@@ -109,7 +116,8 @@ export function AuthModal({ isOpen, onClose, onSuccess, initialIsSignUp = false 
 
         {/* SUCCESS BOX */}
         {successMessage && (
-          <div className="p-3 rounded-lg border border-emerald-500/10 bg-emerald-500/5 text-emerald-500 text-xs flex items-center space-x-2">
+          <div className="p-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
+            <Check size={16} className="shrink-0" />
             <span className="leading-normal">{successMessage}</span>
           </div>
         )}
