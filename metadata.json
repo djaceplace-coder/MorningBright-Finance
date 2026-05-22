@@ -1,0 +1,6 @@
+{
+  "name": "Morning Bright Finance",
+  "description": "Premium modern digital banking experience with responsive dashboards, real-time transaction history, virtual cards, goal savings, and custom administrator controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
