@@ -105,8 +105,9 @@ interface BankState {
     biometricAuthenticated: boolean;
   pwaInstalled: boolean;
 
-  // Error notifications
+  // Error and success notifications
   errorMessage: string | null;
+  successMessage: string | null;
 
   // Listeners unsubs
   listeners: (() => void)[];
@@ -119,6 +120,7 @@ interface BankState {
   checkBiometrics: () => Promise<boolean>;
   toggleBiometrics: (enabled: boolean) => void;
     clearError: () => void;
+    clearSuccess: () => void;
   
   // Realtime loaders
   initRealtimeSubscriptions: (uid: string) => void;
@@ -170,9 +172,11 @@ export const useStore = create<BankState>((set, get) => {
         biometricAuthenticated: false,
     pwaInstalled: false,
     errorMessage: null,
+    successMessage: null,
     listeners: [],
 
     clearError: () => set({ errorMessage: null }),
+    clearSuccess: () => set({ successMessage: null }),
 
     
     initAuthListener: () => {
@@ -212,7 +216,7 @@ export const useStore = create<BankState>((set, get) => {
     },
 
     signUpUser: async (email, pass, first, last) => {
-      set({ loading: true, errorMessage: null });
+      set({ loading: true, errorMessage: null, successMessage: null });
       
       
 
@@ -248,7 +252,7 @@ export const useStore = create<BankState>((set, get) => {
         // If email confirmation is required, session will be null.
         // We cannot insert records until the user verifies and signs in.
         if (!data.session) {
-          set({ loading: false, errorMessage: 'Verification email sent. Please check your inbox and sign in.' });
+          set({ loading: false, successMessage: 'Verification email sent. Please check your inbox and click the link to activate your account.' });
           return;
         }
 
@@ -317,7 +321,7 @@ export const useStore = create<BankState>((set, get) => {
     },
 
     logInUser: async (email, pass) => {
-      set({ loading: true, errorMessage: null });
+      set({ loading: true, errorMessage: null, successMessage: null });
 
       
 

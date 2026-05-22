@@ -42,9 +42,10 @@ import { Logo } from './Logo';
 
 interface LandingProps {
   onEnterApp: () => void;
+  onSignUp: () => void;
 }
 
-export function LandingPage({ onEnterApp }: LandingProps) {
+export function LandingPage({ onEnterApp, onSignUp }: LandingProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeShowcase, setActiveShowcase] = useState<'cards' | 'savings' | 'business' | 'security'>('cards');
   const [legalTab, setLegalTab] = useState<'privacy' | 'terms' | 'cookie' | 'security' | 'acceptable' | null>(null);
@@ -195,6 +196,12 @@ export function LandingPage({ onEnterApp }: LandingProps) {
             >
               Access Accounts
             </button>
+            <button 
+              onClick={onSignUp}
+              className="h-10 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs transition-all hover:scale-[1.03] active:scale-95 shadow-md shadow-emerald-500/20 cursor-pointer"
+            >
+              Open an Account
+            </button>
           </div>
 
           <div className="flex items-center space-x-2 lg:hidden">
@@ -261,9 +268,15 @@ export function LandingPage({ onEnterApp }: LandingProps) {
             <div className="pt-4 flex flex-col space-y-3">
               <button 
                 onClick={() => { setMobileMenuOpen(false); onEnterApp(); }}
-                className="w-full h-11 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black font-semibold text-xs flex items-center justify-center shadow-md"
+                className="w-full h-11 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black font-semibold text-xs flex items-center justify-center shadow-md border border-transparent dark:border-white/10"
               >
                 Access Accounts <ChevronRight size={14} className="ml-1" />
+              </button>
+              <button 
+                onClick={() => { setMobileMenuOpen(false); onSignUp(); }}
+                className="w-full h-11 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs flex items-center justify-center shadow-md shadow-emerald-500/20"
+              >
+                Open an Account <ChevronRight size={14} className="ml-1" />
               </button>
             </div>
           </motion.div>
@@ -296,10 +309,16 @@ export function LandingPage({ onEnterApp }: LandingProps) {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-4">
               <button 
                 onClick={onEnterApp}
-                className="h-12 px-8 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black font-bold text-sm transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center space-x-2 shadow-lg hover:shadow-emerald-500/5 cursor-pointer"
+                className="h-12 px-8 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black font-bold text-sm transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center space-x-2 shadow-lg cursor-pointer"
               >
                 <span>Access Digital Services</span>
                 <ArrowRight size={15} />
+              </button>
+              <button 
+                onClick={onSignUp}
+                className="h-12 px-8 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/20 cursor-pointer"
+              >
+                <span>Open an Account</span>
               </button>
             </div>
 
@@ -1137,6 +1156,12 @@ export function LandingPage({ onEnterApp }: LandingProps) {
               className="h-12 px-8 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-black font-semibold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center space-x-2 border border-transparent dark:border-white/10"
             >
               <span>Launch Account Services</span>
+            </button>
+            <button 
+              onClick={onSignUp}
+              className="h-12 px-8 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs shadow-md shadow-emerald-500/20 transition-all cursor-pointer flex items-center justify-center space-x-2 border border-transparent"
+            >
+              <span>Open an Account</span>
               <ArrowRight size={14} />
             </button>
           </div>

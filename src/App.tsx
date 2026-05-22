@@ -29,7 +29,8 @@ import {
   Lock,
   LockKeyhole,
   ChevronDown,
-  Settings
+  Settings,
+  Download
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 
@@ -44,7 +45,9 @@ export default function App() {
   const { user, settings, logOutUser, initAuthListener } = useStore();
   const [currentTab, setCurrentTab] = useState('home');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalInitialIsSignUp, setAuthModalInitialIsSignUp] = useState(false);
   const [isHeaderDropdownOpen, setIsHeaderDropdownOpen] = useState(false);
+  const [showInstallModal, setShowInstallModal] = useState(false);
   
   const [isPWA, setIsPWA] = useState(false);
 
@@ -69,7 +72,7 @@ export default function App() {
           window.deferredPrompt = null;
         }
       } else {
-        alert("To install the app, tap your browser's 'Share' or menu button and select 'Add to Home Screen'. Your browser may not support automatic installation, or the app is already installed.");
+        setShowInstallModal(true);
       }
     };
     
@@ -114,6 +117,12 @@ export default function App() {
   }, [settings?.theme]);
 
   const handleOpenAuth = () => {
+    setAuthModalInitialIsSignUp(false);
+    setIsAuthModalOpen(true);
+  };
+
+  const handleOpenSignUp = () => {
+    setAuthModalInitialIsSignUp(true);
     setIsAuthModalOpen(true);
   };
 
@@ -164,6 +173,7 @@ export default function App() {
         <>
           <LandingPage 
             onEnterApp={handleOpenAuth} 
+            onSignUp={handleOpenSignUp}
           />
           <AnimatePresence>
             {isAuthModalOpen && (
@@ -171,6 +181,7 @@ export default function App() {
                 isOpen={isAuthModalOpen} 
                 onClose={() => setIsAuthModalOpen(false)} 
                 onSuccess={() => setCurrentTab('home')}
+                initialIsSignUp={authModalInitialIsSignUp}
               />
             )}
           </AnimatePresence>
@@ -284,6 +295,47 @@ export default function App() {
 
         </div>
       )}
+
+      {/* PWA INSTALL MODAL */}
+      <AnimatePresence>
+        {showInstallModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/40 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 p-6 rounded-2xl w-full max-w-sm shadow-xl relative"
+            >
+              <button 
+                onClick={() => setShowInstallModal(false)}
+                className="absolute top-4 right-4 p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors"
+              >
+                <X size={16} />
+              </button>
+              
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center">
+                  <Download className="w-8 h-8 text-emerald-500" />
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Install App</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    To install Morning Bright locally, tap your browser's <strong className="text-slate-900 dark:text-slate-200">Share</strong> menu (iOS) or <strong className="text-slate-900 dark:text-slate-200">Menu bar</strong> (Android) and select <strong className="text-slate-900 dark:text-slate-200">Add to Home Screen</strong>.
+                  </p>
+                </div>
+                
+                <button 
+                  onClick={() => setShowInstallModal(false)}
+                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl text-sm transition-colors"
+                >
+                  Got it
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

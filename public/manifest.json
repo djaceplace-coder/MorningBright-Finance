@@ -1,0 +1,16 @@
+{
+  "name": "Morning Bright Digital Banking",
+  "short_name": "MorningBright",
+  "description": "Premium digital banking platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

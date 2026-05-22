@@ -12,10 +12,11 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  initialIsSignUp?: boolean;
 }
 
-export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
-  const [isSignUp, setIsSignUp] = useState(false);
+export function AuthModal({ isOpen, onClose, onSuccess, initialIsSignUp = false }: AuthModalProps) {
+  const [isSignUp, setIsSignUp] = useState(initialIsSignUp);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,13 +24,14 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const [lastName, setLastName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const { signUpUser, logInUser, loading, errorMessage, clearError } = useStore();
+  const { signUpUser, logInUser, loading, errorMessage, successMessage, clearError, clearSuccess } = useStore();
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
+    clearSuccess();
 
     if (isSignUp) {
       if (password !== confirmPassword) {
@@ -102,6 +104,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           <div className="p-3 rounded-lg border border-red-500/10 bg-red-500/5 text-red-400 text-xs flex items-center space-x-2">
             <AlertCircle size={16} className="shrink-0" />
             <span className="leading-normal">{errorMessage}</span>
+          </div>
+        )}
+
+        {/* SUCCESS BOX */}
+        {successMessage && (
+          <div className="p-3 rounded-lg border border-emerald-500/10 bg-emerald-500/5 text-emerald-500 text-xs flex items-center space-x-2">
+            <span className="leading-normal">{successMessage}</span>
           </div>
         )}
 
