@@ -320,7 +320,11 @@ export const useStore = create<BankState>((set, get) => {
 
     logOutUser: async () => {
       get().clearSubscriptions();
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.warn('Sign out error:', e);
+      }
       set({
         user: null,
         balance: null,

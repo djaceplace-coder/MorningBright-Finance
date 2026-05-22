@@ -69,7 +69,7 @@ export default function App() {
           window.deferredPrompt = null;
         }
       } else {
-        alert("PWA is already installed or not supported by this browser.");
+        alert("To install the app, tap your browser's 'Share' or menu button and select 'Add to Home Screen'. Your browser may not support automatic installation, or the app is already installed.");
       }
     };
     
@@ -242,7 +242,7 @@ export default function App() {
                           className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-xs text-red-600 dark:text-red-400 font-medium cursor-pointer"
                         >
                           <LogOut size={14} />
-                          <span>Close Session</span>
+                          <span>Log Out</span>
                         </button>
                       </div>
                     </motion.div>
