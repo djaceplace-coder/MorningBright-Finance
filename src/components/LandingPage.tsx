@@ -795,9 +795,9 @@ export function LandingPage({ onEnterApp }: LandingProps) {
             <div className="flex flex-col space-y-2 pt-2">
               {[
                 { id: 'cards', label: 'Debit Cards Issuing' },
-                { id: 'savings', label: 'Compound Savings Ledger' },
+                { id: 'savings', label: 'Compound Savings' },
                 { id: 'business', label: 'Corporate Accounts Portal' },
-                { id: 'security', label: 'Cryptographic Biometrics' }
+                { id: 'security', label: 'Biometric Security' }
               ].map((btn) => (
                 <button 
                   key={btn.id}
@@ -891,7 +891,7 @@ export function LandingPage({ onEnterApp }: LandingProps) {
                       <div className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full border border-sky-500/30 bg-sky-500/5 text-[9px] font-mono text-sky-600 dark:text-sky-400 uppercase font-bold">
                         D3 COMPLIANT MODELS
                       </div>
-                      <h3 className="text-xl font-medium text-slate-950 dark:text-white">Compounding ledger charts</h3>
+                      <h3 className="text-xl font-medium text-slate-950 dark:text-white">Savings growth charts</h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                         Safely study your savings yields visual progress under professional D3 and Recharts frameworks. Real rates, calculated with mathematical precision.
                       </p>
@@ -913,7 +913,7 @@ export function LandingPage({ onEnterApp }: LandingProps) {
                         <span className="text-[9px] text-emerald-500 uppercase font-mono font-bold">Routing Linked</span>
                       </div>
                       <div className="p-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-white/5 rounded-xl space-y-1">
-                        <span className="text-[9px] text-slate-400 font-mono">Treasury Cash Sweepers</span>
+                        <span className="text-[9px] text-slate-400 font-mono">Automated Savings</span>
                         <p className="font-semibold text-slate-900 dark:text-white">$85,200.00 Authorized</p>
                       </div>
                       <span className="text-[9px] text-slate-400 font-mono tracking-widest text-right block uppercase">Corporate protection enabled</span>
@@ -921,11 +921,11 @@ export function LandingPage({ onEnterApp }: LandingProps) {
 
                     <div className="space-y-4 text-left">
                       <div className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full border border-indigo-500/30 bg-indigo-500/5 text-[9px] font-mono text-indigo-600 dark:text-indigo-400 uppercase font-bold">
-                        TREASURY OPERATIONS
+                        ACCOUNT OPERATIONS
                       </div>
                       <h3 className="text-xl font-medium text-slate-950 dark:text-white">Seamless commercial views</h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                        Transition between domestic and corporate profiles smoothly inside our unified browser ledger. Standardized, calm, compartmentalized structures to ensure clean compliance reports.
+                        Transition between domestic and corporate profiles smoothly inside our unified banking portal. Standardized, calm, compartmentalized structures to ensure clean compliance reports.
                       </p>
                     </div>
                   </motion.div>
@@ -947,7 +947,7 @@ export function LandingPage({ onEnterApp }: LandingProps) {
                       <div className="p-3.5 rounded-xl bg-slate-950 border border-white/5 text-[11px] leading-relaxed text-slate-300">
                         &quot;WebAuthn cryptographic signatures validate identity at device level. Authentication occurs locally, meaning credentials remain completely sealed in your physical hardware elements.&quot;
                       </div>
-                      <span className="text-[9px] text-slate-500 font-mono tracking-widest text-right uppercase">Sovereign privacy keys</span>
+                      <span className="text-[9px] text-slate-500 font-mono tracking-widest text-right uppercase">Secure Privacy Keys</span>
                     </div>
 
                     <div className="space-y-4 text-left">
@@ -996,7 +996,7 @@ export function LandingPage({ onEnterApp }: LandingProps) {
                   <span>Administrative Audit Trails</span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Every credit movement, card status toggle, and registration adjustment is fully logged in central administrative ledgers.
+                  Every credit movement, card status toggle, and registration adjustment is fully logged in central administrative logs.
                 </p>
               </div>
 
@@ -1034,9 +1034,9 @@ export function LandingPage({ onEnterApp }: LandingProps) {
                 <Lock className="w-8 h-8 text-emerald-600 dark:text-emerald-500" />
               </div>
               
-              <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 tracking-wider uppercase font-bold">Encrypted Ledger Defense</span>
+              <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 tracking-wider uppercase font-bold">Encrypted Data Defense</span>
               <p className="text-[10px] text-slate-400 max-w-xs font-mono leading-relaxed uppercase">
-                AES-256 Storage Shields &bull; TLS v1.3 Transit Channels &bull; FDIC Insured Partner Vaulting
+                AES-256 Storage Shields &bull; TLS v1.3 Transit Channels &bull; FDIC Insured Partner storage
               </p>
             </div>
           </div>
@@ -1069,7 +1069,7 @@ export function LandingPage({ onEnterApp }: LandingProps) {
                 loc: "Seattle, WA — depositors since 2019"
               },
               {
-                quote: "Managing business checking allocations alongside our home mortgages requires precise, lockstep ledger entries. Morning Bright delivers elegant portals with serious banking reliability.",
+                quote: "Managing business checking allocations alongside our home mortgages requires accurate transaction histories. Morning Bright delivers elegant portals with serious banking reliability.",
                 author: "Elizabeth T., Consulting Director",
                 loc: "Chicago, IL — Client Since 2020"
               },
@@ -1197,7 +1197,7 @@ export function LandingPage({ onEnterApp }: LandingProps) {
         {/* Regulatory FDIC & Equal Housing Lender Statement */}
         <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-slate-200 dark:border-white/5 flex flex-col space-y-4 text-[10px] text-slate-400 dark:text-slate-500 font-mono text-left leading-normal">
           <p>
-            Morning Bright Finance is a digital banking platform, not a standalone treasury chartered bank. Banking deposit accounts are structured via clearing houses with partner banks that are fully recognized members of the Federal Deposit Insurance Corporation (FDIC). Deposit limits are subject to standard $250,000 protection limitations.
+            Morning Bright Finance is a digital banking platform, not a standalone chartered bank. Banking deposit accounts are structured via clearing houses with partner banks that are fully recognized members of the Federal Deposit Insurance Corporation (FDIC). Deposit limits are subject to standard $250,000 protection limitations.
           </p>
           <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 pt-2 border-t border-slate-200/40 dark:border-white/5">
             <span>&copy; {new Date().getFullYear()} Morning Bright Finance Corp. All rights reserved.</span>

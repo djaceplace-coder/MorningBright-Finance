@@ -74,7 +74,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         initial={{ scale: 0.95, opacity: 0, y: 15 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 15 }}
-        className="relative w-full max-w-md bg-slate-900 border border-white/10 rounded-2xl p-6 md:p-8 shadow-2xl overflow-hidden flex flex-col space-y-5"
+        className="relative w-full max-w-md bg-slate-900 border border-white/10 rounded-2xl p-6 md:p-8 shadow-2xl overflow-y-auto max-h-[90vh] flex flex-col space-y-5"
       >
         {/* Glow corner decoration */}
         <div className="absolute -top-12 -right-12 w-28 h-28 bg-emerald-500/10 blur-xl rounded-full" />
@@ -82,10 +82,10 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         <div className="flex justify-between items-center">
           <div>
             <h3 className="text-xl font-medium tracking-tight text-white font-sans">
-              {isSignUp ? 'Create Elite Vault' : 'Authorize Credentials'}
+              {isSignUp ? 'Create Account' : 'Secure Login'}
             </h3>
             <p className="text-xs text-slate-400 mt-1">
-              Morning Bright Premium Digital Interface
+              Morning Bright Digital Banking
             </p>
           </div>
           <button 
@@ -141,7 +141,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Email Secure Address</label>
+            <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Email Address</label>
             <div className="relative">
               <Mail className="absolute left-3 top-3.5 w-4 h-4 text-slate-500" />
               <input 
@@ -156,7 +156,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Auth Cryptopassword</label>
+            <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Password</label>
             <div className="relative">
               <Lock className="absolute left-3 top-3.5 w-4 h-4 text-slate-500" />
               <input 
@@ -179,7 +179,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
           {isSignUp && (
             <div className="space-y-1.5">
-              <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Confirm Cryptopassword</label>
+              <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Confirm Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3.5 w-4 h-4 text-slate-500" />
                 <input 
@@ -203,7 +203,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
               {loading ? (
                 <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
               ) : (
-                <span>{isSignUp ? 'Generate Secure Account' : 'Authorize & Open Account'}</span>
+                <span>{isSignUp ? 'Create Account' : 'Secure Login'}</span>
               )}
             </button>
           </div>
@@ -216,7 +216,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             onClick={() => { setIsSignUp(!isSignUp); clearError(); }}
             className="text-[11px] text-slate-400 hover:text-emerald-400 font-mono underline underline-offset-2 cursor-pointer"
           >
-            {isSignUp ? 'Already registered? Authorize credentials' : 'Need sub-account? Create digital vault'}
+            {isSignUp ? 'Already have an account? Sign in' : 'Need an account? Sign up'}
           </button>
         </div>
       </motion.div>

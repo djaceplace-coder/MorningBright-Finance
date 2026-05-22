@@ -12,6 +12,7 @@ body {
   font-family: var(--font-sans);
   background-color: #f8fafc; /* slate-50 */
   color: #0f172a; /* slate-900 */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 .dark body {
   background-color: #020617; /* slate-950 */

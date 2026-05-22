@@ -102,7 +102,7 @@ export function SettingsView() {
       
       {/* TITLE HEAD */}
       <div className="border-b border-slate-200 dark:border-white/5 pb-4">
-        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">SOVEREIGN VAULT CONFIGURATIONS</span>
+        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">ACCOUNT CONFIGURATIONS</span>
         <h2 className="text-2xl font-sans tracking-tight font-medium text-slate-900 dark:text-white mt-1">
           Settings & Security Matrix
         </h2>
@@ -157,8 +157,8 @@ export function SettingsView() {
 
           <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-5 transition-all">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Owner Credentials</h3>
-              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Sovereign identity profile logs</p>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Account Details</h3>
+              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Identity profile logs</p>
             </div>
 
             <form onSubmit={handleUpdateProfile} className="space-y-4">
@@ -186,7 +186,7 @@ export function SettingsView() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Authenticated Email Secure Address</label>
+                <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Email Address</label>
                 <input 
                   type="email"
                   value={user?.email || ''}
@@ -199,7 +199,7 @@ export function SettingsView() {
                 type="submit"
                 className="w-full h-11 rounded-lg bg-slate-950 dark:bg-white text-white dark:text-black text-xs font-bold transition-transform hover:scale-[1.01] cursor-pointer"
               >
-                Apply Owner Alterations
+                Update Profile
               </button>
             </form>
           </div>
@@ -208,7 +208,7 @@ export function SettingsView() {
           <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-4 transition-all">
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Credential Verification</h3>
-              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Cryptographic verification bounds</p>
+              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Identity verification settings</p>
             </div>
 
             <span className="text-xs text-slate-500 dark:text-slate-400 block leading-relaxed">
@@ -228,7 +228,7 @@ export function SettingsView() {
                   disabled={loading}
                   className="h-9 px-4 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-slate-300 hover:dark:border-white/20 text-xs text-slate-900 dark:text-slate-200 font-mono uppercase tracking-wider cursor-pointer font-bold"
                 >
-                  Push Dispatch Mail
+                  Send Verification Email
                 </button>
               )}
             </div>
@@ -240,7 +240,7 @@ export function SettingsView() {
           <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-5 transition-all">
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Biometric & Access Controls</h3>
-              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Device biomatrix and login security</p>
+              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Device biometrics and login security</p>
             </div>
 
             <div className="space-y-4">

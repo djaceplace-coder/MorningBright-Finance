@@ -78,7 +78,7 @@ export function LegalPage({ initialTab = 'privacy', onClose }: LegalPageProps) {
               <article className="space-y-6">
                 <h2 className="text-xl font-medium text-white tracking-tight border-b border-white/5 pb-3">Privacy & Secrecy Policy</h2>
                 <p className="text-xs text-slate-400 leading-relaxed font-mono">
-                  Morning Bright Finance Corp is committed to protecting the privacy of high-net-worth sovereign digital bank assets.
+                  Morning Bright Finance Corp is committed to protecting the privacy of high-net-worth Secure digital bank assets.
                 </p>
                 
                 <section className="space-y-3">
@@ -91,7 +91,7 @@ export function LegalPage({ initialTab = 'privacy', onClose }: LegalPageProps) {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-white">2. Data Acquisition Standards</h3>
                   <p className="text-xs leading-relaxed text-slate-300">
-                    We collect only relevant identity details required for U.S. Federal compliance (KYC/AML rules). This includes your legal name, certified email addresses, and secure authentication metadata. Transaction sub-ledgers are cryptographically sealed in Supabase PostgreSQL database tables and isolated per account index.
+                    We collect only relevant identity details required for U.S. Federal compliance (KYC/AML rules). This includes your legal name, certified email addresses, and secure authentication metadata. Transaction sub-transactions are cryptographically sealed in Supabase PostgreSQL database tables and isolated per account index.
                   </p>
                 </section>
 
@@ -115,7 +115,7 @@ export function LegalPage({ initialTab = 'privacy', onClose }: LegalPageProps) {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-white">1. Core Service Mandate</h3>
                   <p className="text-xs leading-relaxed text-slate-300">
-                    By launching this platform, you certify that all assets deposited are of sovereign, verifiable origins. Deposits placed in Checking or Savings reserves are allocated under FDIC pass-through coverage up to USD $250,000 via our designated clearance partners.
+                    By launching this platform, you certify that all assets deposited are of Secure, verifiable origins. Deposits placed in Checking or Savings reserves are allocated under FDIC pass-through coverage up to USD $250,000 via our designated clearance partners.
                   </p>
                 </section>
 
@@ -127,7 +127,7 @@ export function LegalPage({ initialTab = 'privacy', onClose }: LegalPageProps) {
                 </section>
 
                 <section className="space-y-3">
-                  <h3 className="text-sm font-semibold text-white">3. Ledger Finality</h3>
+                  <h3 className="text-sm font-semibold text-white">3. transaction Finality</h3>
                   <p className="text-xs leading-relaxed text-slate-300">
                     All outbound transfers, virtual card operations, or subcollection allocations processed through the API are subject to near-instant finality. Disputed card charges can be filed securely through our customer support hubs.
                   </p>
@@ -172,7 +172,7 @@ export function LegalPage({ initialTab = 'privacy', onClose }: LegalPageProps) {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-white">1. Zero-Trust Access Control</h3>
                   <p className="text-xs leading-relaxed text-slate-300">
-                    Every ledger query, wire dispatch, and card toggle is validated server-side. Supabase Row-Level Security (RLS) policies enforce attributes matching `auth.uid() = user_id` instantly, preventing cross-profile security gaps.
+                    Every transaction query, wire dispatch, and card toggle is validated server-side. Supabase Row-Level Security (RLS) policies enforce attributes matching `auth.uid() = user_id` instantly, preventing cross-profile security gaps.
                   </p>
                 </section>
 
@@ -210,7 +210,7 @@ export function LegalPage({ initialTab = 'privacy', onClose }: LegalPageProps) {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-white">2. Programmatic Automation</h3>
                   <p className="text-xs leading-relaxed text-slate-300">
-                    Clients are strictly forbidden from placing automated scrapers, crawlers, or loop scripts inside our virtual card endpoints. Account profiles generating artificial ledger velocities will be instantly isolated by our security panels.
+                    Clients are strictly forbidden from placing automated scrapers, crawlers, or loop scripts inside our virtual card endpoints. Account profiles generating artificial transaction velocities will be instantly isolated by our security panels.
                   </p>
                 </section>
               </article>

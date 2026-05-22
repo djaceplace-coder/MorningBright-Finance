@@ -228,7 +228,7 @@ export function CardsView() {
                     {activeCard.isFrozen ? (
                       <>
                         <Unlock size={12} />
-                        <span>Unfreeze Vault</span>
+                        <span>Unfreeze Account</span>
                       </>
                     ) : (
                       <>
@@ -282,7 +282,7 @@ export function CardsView() {
               <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-4 transition-all text-slate-900 dark:text-white">
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Filtered Card Wires</h3>
-                  <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Ledger events for selected card</p>
+                  <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Transaction events for selected card</p>
                 </div>
 
                 <div className="space-y-3 pt-2">

@@ -81,9 +81,9 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
     } catch (e) {
       setTimeout(() => {
         const advices = [
-          `Your combined net assets of $${netCapital.toLocaleString(undefined, { minimumFractionDigits: 2 })} has climbed 18% this cycle. Redirecting a fixed 5% of monthly checking flows to the Ebony Card sub-goals will shorten your target goals by 32 days.`,
-          `We noted luxury spend limits are fully active. If you allocate a one-time wire of $2,000 to your savings subcollection, you will clear your targets before the November billing period.`,
-          `Analysis of current checking balances ($${totalChecking.toLocaleString()}) suggests a pool size that exceeds necessary cash reserves. Consider moving $3,000 into high-yield goal reserves to maximize compounding potential.`
+          `Your combined balance of $${netCapital.toLocaleString(undefined, { minimumFractionDigits: 2 })} has grown steadily. Setting up an automated transfer to your Savings Account could accelerate your financial goals.`,
+          `Your recent transaction patterns are healthy. Consider allocating a portion of your checking balance to a high-yield savings to maximize your returns.`,
+          `Analysis of current checking balances ($${totalChecking.toLocaleString()}) suggests sufficient cash reserves. Consider transferring surplus funds to your Savings Account.`
         ];
         const randomAdvice = advices[Math.floor(Math.random() * advices.length)];
         setAiInsight(randomAdvice);
@@ -107,7 +107,7 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
       {/* DIAGNOSTIC STATE BANNER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 dark:border-white/5 pb-4 space-y-3 sm:space-y-0">
         <div>
-          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">SOVEREIGN LEDGER PORTAL</span>
+          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">Transaction History PORTAL</span>
           <h2 className="text-2xl font-sans tracking-tight font-medium text-slate-900 dark:text-white mt-1">
             Welcome back, {user?.firstName || 'Valued Account'}
           </h2>
@@ -164,14 +164,14 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
             </h3>
           </div>
           <div className="mt-8 flex justify-between items-center text-[10px] text-slate-500 font-mono">
-            <span>Morning Bright Vault</span>
+            <span>Morning Bright account</span>
             <span className="flex items-center text-emerald-600 dark:text-emerald-400 font-bold">
               Synced
             </span>
           </div>
         </div>
 
-        {/* CHECKING VAULT */}
+        {/* Checking Account */}
         <div className="p-5 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950/50 flex flex-col justify-between shadow-sm dark:shadow-none">
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 font-mono uppercase tracking-widest block font-weight-bold font-bold">Checking Subcollection</span>
@@ -191,7 +191,7 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
           </div>
         </div>
 
-        {/* SAVING SUB-VAULTS */}
+        {/* SAVING Savings Goals */}
         <div className="p-5 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950/50 flex flex-col justify-between shadow-sm dark:shadow-none">
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 font-mono uppercase tracking-widest block font-bold">Goal Savings Reserves</span>
@@ -225,14 +225,14 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
             </div>
             <div className="flex items-center space-x-2 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 border border-emerald-500/10 bg-emerald-500/5 px-2.5 py-1 rounded-full">
               <Activity size={12} />
-              <span>Synced with Ledger</span>
+              <span>Synced with Server</span>
             </div>
           </div>
 
           <div className="h-64 w-full">
             {netCapital === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center text-xs text-slate-400 italic">
-                <span>No capital deposited inside this ledger yet.</span>
+                <span>No capital deposited inside this account yet.</span>
                 <span className="text-[10px] block mt-1">Tap &quot;Deposit External Wire&quot; to begin plotting indices.</span>
               </div>
             ) : (
@@ -323,11 +323,11 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
 
       </div>
 
-      {/* BOTTOM PORTION: TRANSACTION LEDGER */}
+      {/* BOTTOM PORTION: Transaction History */}
       <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-950/40 space-y-4 shadow-sm">
         <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-white/5">
           <div>
-            <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Vault Ledger Feed</h3>
+            <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Transaction History</h3>
             <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">realtime transaction histories</p>
           </div>
           <button 
@@ -341,7 +341,7 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
         <div className="space-y-4 mt-2">
           {transactions.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-400 italic">
-              No ledger entries logged in this subcollection yet. Initialize deposits using the button above.
+              No transaction entries logged in this subcollection yet. Initialize deposits using the button above.
             </div>
           ) : (
             transactions.slice(0, 5).map((tx) => (
@@ -386,8 +386,8 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-4">
             <div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Deposit Premium Wire</h3>
-              <p className="text-xs text-slate-400 mt-0.5">Simulate incoming external capital feeds</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Wire Deposit</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Simulate incoming transfer</p>
             </div>
 
             <div className="space-y-3">
@@ -403,7 +403,7 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
               </div>
 
               <div className="space-y-1">
-                <label className="text-[9px] font-mono uppercase text-slate-500 font-bold">Target Account Vault</label>
+                <label className="text-[9px] font-mono uppercase text-slate-500 font-bold">Target Account</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button 
                     type="button"
@@ -442,7 +442,7 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
                 onClick={handleApplyFunding}
                 className="flex-1 h-11 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-widest cursor-pointer"
               >
-                Clear Wire
+                Add Funds
               </button>
             </div>
           </div>

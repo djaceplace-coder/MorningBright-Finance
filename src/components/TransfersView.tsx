@@ -77,8 +77,8 @@ export function TransfersView() {
     }
   };
 
-  // Filter & Search ledger logic
-  const filteredLedger = transactions.filter(tx => {
+  // Filter & Search transaction logic
+  const filteredTransactions = transactions.filter(tx => {
     const matchesSearch = 
       tx.merchant.toLowerCase().includes(searchQuery.toLowerCase()) || 
       tx.category.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -97,7 +97,7 @@ export function TransfersView() {
       
       {/* TITLE HEAD */}
       <div className="border-b border-slate-205 dark:border-white/5 pb-4 text-slate-900 dark:text-white">
-        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">SOVEREIGN WIRE TRANSFER TERMINAL</span>
+        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">WIRE TRANSFER TERMINAL</span>
         <h2 className="text-2xl font-sans tracking-tight font-medium text-slate-900 dark:text-white mt-1">
           Transfers & Wire Desk
         </h2>
@@ -110,7 +110,7 @@ export function TransfersView() {
           <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-5 shadow-sm dark:shadow-none">
             <div>
               <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Instant Money Transfer</h3>
-              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Sub-second Ledger Clearance</p>
+              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Instant Transfer Clearance</p>
             </div>
 
             {/* STATUS DIALOGS */}
@@ -207,12 +207,12 @@ export function TransfersView() {
           </div>
         </div>
 
-        {/* LEDGER CENTRAL ARCHIVE */}
+        {/* TRANSACTION ARCHIVE */}
         <div className="lg:col-span-8 space-y-6">
           <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-5 shadow-sm dark:shadow-none">
             <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center space-y-3 sm:space-y-0">
               <div>
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Comprehensive Ledger Archive</h3>
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Comprehensive Transaction Archive</h3>
                 <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">verified double-entry transaction record</p>
               </div>
 
@@ -245,21 +245,21 @@ export function TransfersView() {
                 type="text" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search ledger by transaction description, category or voucher ID..."
+                placeholder="Search transaction by transaction description, category or voucher ID..."
                 className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-100/5 text-xs text-slate-900 dark:text-white placeholder-slate-450 focus:outline-none focus:border-emerald-500"
               />
             </div>
 
-            {/* COMPLETED LEDGER TRAIL */}
+            {/* COMPLETED TRANSACTIONS */}
             <div className="space-y-3.5 pt-2">
-              {filteredLedger.length === 0 ? (
+              {filteredTransactions.length === 0 ? (
                 <div className="p-16 text-center border border-dashed border-slate-200 dark:border-white/10 rounded-xl text-xs text-slate-500 italic flex flex-col items-center justify-center">
                   <Clock className="w-8 h-8 text-slate-400 mb-2" />
                   <span className="font-semibold text-slate-900 dark:text-white">No transactions yet</span>
-                  <span className="block text-[10px] font-mono text-slate-450 mt-0.5">Your ledger updates automatically in real time</span>
+                  <span className="block text-[10px] font-mono text-slate-450 mt-0.5">Your history updates automatically in real time</span>
                 </div>
               ) : (
-                filteredLedger.map((tx) => {
+                filteredTransactions.map((tx) => {
                   const isDeposit = tx.type === 'deposit' || tx.type === 'transfer_received';
                   
                   return (

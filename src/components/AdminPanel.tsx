@@ -42,12 +42,12 @@ export function AdminPanel() {
   // Create Transaction Form
   const [txAmount, setTxAmount] = useState('250');
   const [txType, setTxType] = useState<TransactionType>(TransactionType.CARD_SPEND);
-  const [txMerchant, setTxMerchant] = useState('Monaco Yacht Harbor');
-  const [txCategory, setTxCategory] = useState('Travel & Yachts');
+  const [txMerchant, setTxMerchant] = useState('Whole Foods Market');
+  const [txCategory, setTxCategory] = useState('Groceries');
 
   // Push Notification Form
-  const [notifTitle, setNotifTitle] = useState('Sovereign Overdraft Cleared');
-  const [notifMsg, setNotifMsg] = useState('Your checking sub-vault has successfully cleared international wire clearance tags.');
+  const [notifTitle, setNotifTitle] = useState('Overdraft Cleared');
+  const [notifMsg, setNotifMsg] = useState('Your checking account has successfully cleared the overdraft fee.');
 
   // Alert Success triggers
   const [alertSuccess, setAlertSuccess] = useState<string | null>(null);
@@ -81,7 +81,7 @@ export function AdminPanel() {
 
     if (isNaN(chk) || isNaN(sav)) return;
     await adminEditBalance(selectedUserId, chk, sav);
-    showSuccessAlert(`Adjusted ledger for user ${activeTargetProfile?.email || selectedUserId} to Checking: $${chk}, Savings: $${sav}`);
+    showSuccessAlert(`Adjusted transaction for user ${activeTargetProfile?.email || selectedUserId} to Checking: $${chk}, Savings: $${sav}`);
   };
 
   const handleInsertTransaction = async (e: React.FormEvent) => {
@@ -133,7 +133,7 @@ export function AdminPanel() {
 
         <div className="flex items-center space-x-2 text-[10px] font-mono text-amber-400 border border-amber-500/10 bg-amber-500/5 px-2.5 py-1 rounded-full">
           <ShieldAlert size={12} strokeWidth={2.5} />
-          <span>Sovereign Security Mode Active</span>
+          <span>Secure Security Mode Active</span>
         </div>
       </div>
 
@@ -155,7 +155,7 @@ export function AdminPanel() {
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {usersList.length === 0 ? (
               <div className="p-4 rounded-xl text-xs text-slate-400 italic text-center border border-white/5">
-                No indexed user accounts found. Loading simulation indices...
+                No user accounts found. Loading accounts...
               </div>
             ) : (
               usersList.map((u) => {
@@ -195,7 +195,7 @@ export function AdminPanel() {
           {/* DANGEROUS QUICK LOCK CONTROLS */}
           {activeTargetProfile && (
             <div className="pt-4 border-t border-white/5 space-y-3">
-              <span className="text-[9px] text-red-500 font-mono uppercase tracking-widest block font-bold">Node State Overrides ({activeTargetProfile.firstName})</span>
+              <span className="text-[9px] text-red-500 font-mono uppercase tracking-widest block font-bold">Account State Controls ({activeTargetProfile.firstName})</span>
               
               <div className="grid grid-cols-2 gap-2">
                 <button 
@@ -304,7 +304,7 @@ export function AdminPanel() {
         {/* CREATE TRANSACTION FORM */}
         <div className="lg:col-span-4 p-5 rounded-2xl border border-white/5 bg-slate-950/40 space-y-4">
           <div>
-            <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest block font-bold">04/ Generate Ledger Transactions</span>
+            <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest block font-bold">04/ Generate Transactions</span>
             <p className="text-xs text-slate-400 mt-0.5">Force inject debit outlays or cash deposits</p>
           </div>
 
@@ -363,7 +363,7 @@ export function AdminPanel() {
               type="submit"
               className="w-full h-10 rounded-lg bg-white hover:bg-slate-100 text-black text-xs font-bold transition-transform hover:scale-[1.01]"
             >
-              Inject Master Ledger Entry
+              Inject Transaction
             </button>
           </form>
         </div>
@@ -380,7 +380,7 @@ export function AdminPanel() {
         <div className="space-y-3.5 pt-2 max-h-80 overflow-y-auto pr-1">
           {adminLogs.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-600 font-mono italic">
-              No security logging entries recorded in master_audit_ledger.
+              No audit logs recorded.
             </div>
           ) : (
             adminLogs.map((log) => (

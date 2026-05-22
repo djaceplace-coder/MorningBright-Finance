@@ -110,7 +110,7 @@ export function SavingsView() {
         <div>
           <span className="text-[10px] text-emerald-605 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">SAVINGS PROTOCOLS</span>
           <h2 className="text-2xl font-sans tracking-tight font-medium text-slate-900 dark:text-white mt-1">
-            Goal Reserves & Sub-Vaults
+            Goal Reserves & Savings Goals
           </h2>
         </div>
 
@@ -119,7 +119,7 @@ export function SavingsView() {
           className="h-10 px-4 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-black font-semibold text-xs flex items-center space-x-1.5 hover:scale-105 active:scale-95 transition-transform cursor-pointer"
         >
           <Plus size={14} />
-          <span>Structure Savings Vault</span>
+          <span>Create Savings Goal</span>
         </button>
       </div>
 
@@ -145,15 +145,15 @@ export function SavingsView() {
         <div className="p-5 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-905 bg-white dark:bg-slate-950/40 flex justify-between items-center shadow-sm dark:shadow-none">
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 font-mono uppercase block font-bold">Active Reserves Structured</span>
-            <span className="text-2xl font-mono text-slate-900 dark:text-white font-bold">{savings.length} Sub-Vaults</span>
+            <span className="text-2xl font-mono text-slate-900 dark:text-white font-bold">{savings.length} Savings Goals</span>
           </div>
           <Target className="w-10 h-10 text-slate-400/20 dark:text-slate-500/10" />
         </div>
       </div>
 
-      {/* SAVINGS SUB-VAULTS GRID */}
+      {/* SAVINGS Savings Goals GRID */}
       <div className="space-y-4">
-        <span className="text-[10px] text-slate-505 dark:text-slate-500 font-mono uppercase tracking-widest block font-bold px-1">Your Structured Vaults</span>
+        <span className="text-[10px] text-slate-505 dark:text-slate-500 font-mono uppercase tracking-widest block font-bold px-1">Your Savings Goals</span>
 
         {savings.length === 0 ? (
           <div className="p-12 text-center border border-dashed border-slate-250 dark:border-white/10 bg-white dark:bg-slate-950/20 rounded-2xl text-xs text-slate-500 italic py-16">
@@ -174,7 +174,7 @@ export function SavingsView() {
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
                       <h3 className="text-md font-semibold text-slate-900 dark:text-white font-sans">{goal.title}</h3>
-                      <span className="text-[9px] font-mono text-slate-400 block uppercase">Vault UID: {goal.id.slice(0, 10)}</span>
+                      <span className="text-[9px] font-mono text-slate-400 block uppercase">account UID: {goal.id.slice(0, 10)}</span>
                     </div>
 
                     <div className="px-2.5 py-0.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
@@ -231,21 +231,21 @@ export function SavingsView() {
           <div className="space-y-2">
             <span className="text-emerald-550 dark:text-emerald-400 font-bold font-mono">01/ Auto Roundups</span>
             <p className="text-slate-505 dark:text-slate-400 leading-relaxed text-[11px]">
-              Sweeps the loose decimals of checking card outlays automatically into your top selected goal sub-vault.
+              Sweeps the loose decimals of checking card outlays automatically into your top selected goal savings goal.
             </p>
           </div>
 
           <div className="space-y-2">
             <span className="text-emerald-555 dark:text-emerald-400 font-bold font-mono">02/ Encrypted Isolation</span>
             <p className="text-slate-505 dark:text-slate-400 leading-relaxed text-[11px]">
-              Sub-vault balances are protected under our sovereign checkings subcollection schema to prevent double-spending liabilities.
+              savings goal balances are protected under our Secure checkings subcollection schema to prevent double-spending liabilities.
             </p>
           </div>
 
           <div className="space-y-2">
             <span className="text-emerald-555 dark:text-emerald-400 font-bold font-mono">03/ Instant Defrost</span>
             <p className="text-slate-505 dark:text-slate-400 leading-relaxed text-[11px]">
-              Retrieve capitals from structured sub-vaults immediately back to your checking pool without custom locks or transfer delay.
+              Retrieve capitals from structured Savings Goals immediately back to your checking pool without custom locks or transfer delay.
             </p>
           </div>
         </div>
@@ -263,7 +263,7 @@ export function SavingsView() {
             >
               <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-white/5">
                 <div>
-                  <h3 className="text-lg font-sans font-medium text-slate-900 dark:text-white">Structure Savings Vault</h3>
+                  <h3 className="text-lg font-sans font-medium text-slate-900 dark:text-white">Create Savings Goal</h3>
                   <p className="text-[10px] text-slate-400 font-mono mt-0.5">Define wealth parameters and allocation</p>
                 </div>
                 <button 
@@ -276,7 +276,7 @@ export function SavingsView() {
 
               <form onSubmit={handleCreateGoal} className="space-y-4 text-slate-950">
                 <div className="space-y-1.5">
-                  <label className="text-[9px] font-mono uppercase text-slate-500">Vault Label</label>
+                  <label className="text-[9px] font-mono uppercase text-slate-500">account Label</label>
                   <input 
                     type="text" 
                     value={goalName}
@@ -315,7 +315,7 @@ export function SavingsView() {
                   type="submit"
                   className="w-full h-11 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-black hover:bg-slate-900 text-xs font-bold uppercase tracking-widest cursor-pointer mt-4"
                 >
-                  Structure Sub-Vault
+                  Structure savings goal
                 </button>
               </form>
             </motion.div>
@@ -323,7 +323,7 @@ export function SavingsView() {
         )}
       </AnimatePresence>
 
-      {/* DEPOSIT INTO SUB-GOAL VAULT STATE MODAL */}
+      {/* DEPOSIT INTO SUB-GOAL account STATE MODAL */}
       <AnimatePresence>
         {fundGoalModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">

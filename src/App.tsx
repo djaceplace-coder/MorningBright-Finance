@@ -94,14 +94,14 @@ export default function App() {
           </div>
 
           <div className="space-y-1">
-            <h3 className="text-xl font-medium tracking-tight text-white">Owner Credentials Suspended</h3>
+            <h3 className="text-xl font-medium tracking-tight text-white">Account Suspended</h3>
             <p className="text-xs text-slate-500 font-mono mt-1">
-              Morning Bright Premium Security Isolation
+              Morning Bright Risk Operations
             </p>
           </div>
 
           <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-            We registered abnormal transactional outlays that conflict with sovereign compliance rules. This node checking subcollection has been temporarily sandboxed.
+            We registered abnormal transactional activity. This account has been temporarily restricted for your safety. Please contact our support team.
           </p>
 
           <div className="pt-4 border-t border-white/5 w-full flex flex-col space-y-3">
@@ -111,7 +111,7 @@ export default function App() {
             >
               Sign Out Securely
             </button>
-            <div className="text-[10px] font-mono text-slate-600 uppercase font-bold tracking-widest text-center mt-1">By order of compliance</div>
+            <div className="text-[10px] font-mono text-slate-600 uppercase font-bold tracking-widest text-center mt-1">Please contact support</div>
           </div>
         </div>
       </div>

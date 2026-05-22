@@ -388,7 +388,7 @@ export const useStore = create<BankState>((set, get) => {
         set({ listeners: [unsubFn] });
 
       } catch (err: any) {
-        set({ loading: false, authChecked: true, errorMessage: err.message || "Sync ledger link drop" });
+        set({ loading: false, authChecked: true, errorMessage: err.message || "Network connection error" });
       }
     },
 
@@ -410,7 +410,7 @@ export const useStore = create<BankState>((set, get) => {
       }
 
       if (currentBalance.checking < amount) {
-        set({ loading: false, errorMessage: 'Insufficient funds in checking vault' });
+        set({ loading: false, errorMessage: 'Insufficient funds in Checking Account' });
         return;
       }
 
@@ -473,7 +473,7 @@ export const useStore = create<BankState>((set, get) => {
               updated_at: new Date().toISOString()
             }).eq('uid', rUid);
 
-            // Insert matching transaction incoming ledger
+            // Insert matching transaction incoming transaction
             const txReceived: BankTransaction = {
               id: 'tx_r_' + Math.random().toString(36).substring(2, 10),
               userId: rUid,
@@ -814,7 +814,7 @@ export const useStore = create<BankState>((set, get) => {
         const notifObj: BankNotification = {
           id: notifId,
           userId,
-          title: 'Account Ledger Adjusted',
+          title: 'Account Balance Adjusted',
           message: `Your balance balances have been administratively updated to Checking: $${checking.toFixed(2)}, Savings: $${savings.toFixed(2)}`,
           isRead: false,
           type: 'alert',
@@ -847,7 +847,7 @@ export const useStore = create<BankState>((set, get) => {
         adminEmail: get().user?.email || 'support@morningbrightfinance.com',
         action: 'INSERT_TRANSACTION',
         targetUserId: userId,
-        details: `Injected transaction ledger: $${amount.toFixed(2)} [${type}] at ${merchant}`,
+        details: `Injected transaction: $${amount.toFixed(2)} [${type}] at ${merchant}`,
         timestamp: new Date().toISOString()
       };
 

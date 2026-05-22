@@ -24,7 +24,7 @@ export function MobileNav({ currentTab, onChangeTab }: MobileNavProps) {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-t border-slate-200 dark:border-white/5 flex justify-around items-center px-2 z-40 select-none pb-safe transition-colors">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-t border-slate-200 dark:border-white/5 flex justify-around items-center px-2 z-40 select-none pb-[env(safe-area-inset-bottom)] transition-colors">
       {menuItems.map((item) => (
         <button
           key={item.id}

@@ -75,7 +75,7 @@ export async function handleSupabaseError(error: unknown, operationType: Operati
 // BACKWARD PORT COMPATIBILITY FOR PREVIOUS HOOKS / LOGGERS
 export const handleFirestoreError = handleSupabaseError;
 
-// INTERRUPTIBLE LEDGER DBMAPPERS
+// INTERRUPTIBLE transaction DBMAPPERS
 
 // 1. User Profile Mapper
 export function mapUserToDb(u: any) {
