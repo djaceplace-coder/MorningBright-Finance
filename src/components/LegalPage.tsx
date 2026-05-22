@@ -186,7 +186,7 @@ export function LegalPage({ initialTab = 'privacy', onClose }: LegalPageProps) {
                 <section className="space-y-3">
                   <h3 className="text-sm font-semibold text-white">3. Ethical Disclosure Protocol</h3>
                   <p className="text-xs leading-relaxed text-slate-300">
-                    Vulnerabilities or operational bugs can be logged immediately to: <span className="font-mono text-emerald-400">adereraadenike@gmail.com</span> for active remediation.
+                    Vulnerabilities or operational bugs can be logged immediately to: <span className="font-mono text-emerald-400">support@morningbrightfinance.com</span> for active remediation.
                   </p>
                 </section>
               </article>

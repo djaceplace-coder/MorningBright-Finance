@@ -27,14 +27,17 @@ import {
   Sparkles,
   Database,
   Lock,
-  LockKeyhole
+  LockKeyhole,
+  ChevronDown,
+  Settings
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 
 export default function App() {
-  const { user, settings, simulationActive, setSimulationMode, logOutUser, initAuthListener } = useStore();
+  const { user, settings, logOutUser, initAuthListener } = useStore();
   const [currentTab, setCurrentTab] = useState('home');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isHeaderDropdownOpen, setIsHeaderDropdownOpen] = useState(false);
 
   // Startup persistent auth session restore effect
   React.useEffect(() => {
@@ -72,16 +75,6 @@ export default function App() {
       return () => mediaQuery.removeEventListener('change', listener);
     }
   }, [settings?.theme]);
-
-  const handleActivateDemo = async () => {
-    // Attempt login as administrative bootstrapped profile
-    await useStore.getState().logInUser('adereraadenike@gmail.com', 'finance101');
-    const hasError = useStore.getState().errorMessage;
-    if (hasError) {
-      // Create it if it doesn't exist
-      await useStore.getState().signUpUser('adereraadenike@gmail.com', 'finance101', 'Alex', 'Morningstar');
-    }
-  };
 
   const handleOpenAuth = () => {
     setIsAuthModalOpen(true);
@@ -134,8 +127,6 @@ export default function App() {
         <>
           <LandingPage 
             onEnterApp={handleOpenAuth} 
-            onActivateDemo={handleActivateDemo}
-            simulationActive={simulationActive}
           />
           <AnimatePresence>
             {isAuthModalOpen && (
@@ -164,20 +155,60 @@ export default function App() {
                 <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white">Morning Bright</span>
               </div>
 
-              <div className="flex items-center space-x-3.5 text-slate-900 dark:text-white">
-                <div className="w-7 h-7 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                  <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[10px] uppercase font-mono font-bold">
-                    {user.firstName[0]}{user.lastName[0]}
-                  </span>
-                </div>
-                
+              <div className="flex items-center space-x-3.5 text-slate-900 dark:text-white relative">
                 <button 
-                  onClick={logOutUser}
-                  className="p-1 rounded bg-slate-200 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                  title="Close Session"
+                  onClick={() => setIsHeaderDropdownOpen(!isHeaderDropdownOpen)}
+                  className="flex items-center space-x-2 p-1 rounded-full hover:bg-slate-200 dark:hover:bg-white/5 cursor-pointer transition-colors"
                 >
-                  <LogOut size={14} />
+                  <div className="w-7 h-7 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                    <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[10px] uppercase font-mono font-bold">
+                      {user.firstName[0]}{user.lastName[0]}
+                    </span>
+                  </div>
+                  <ChevronDown size={14} className={`text-slate-400 transition-transform ${isHeaderDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
+
+                <AnimatePresence>
+                  {isHeaderDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-lg shadow-black/5 dark:shadow-black/20 z-50 overflow-hidden"
+                    >
+                      <div className="p-1.5 flex flex-col space-y-1">
+                        <button
+                          onClick={() => { setCurrentTab('settings'); setIsHeaderDropdownOpen(false); }}
+                          className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-xs text-slate-600 dark:text-slate-300 font-medium cursor-pointer"
+                        >
+                          <User size={14} className="text-emerald-500" />
+                          <span>Profile Details</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => { setCurrentTab('settings'); setIsHeaderDropdownOpen(false); }}
+                          className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-xs text-slate-600 dark:text-slate-300 font-medium cursor-pointer"
+                        >
+                          <Settings size={14} className="text-emerald-500" />
+                          <span>Security Settings</span>
+                        </button>
+
+                        <div className="h-px bg-slate-200 dark:bg-white/10 my-1 mx-2" />
+
+                        <button
+                          onClick={() => {
+                            setIsHeaderDropdownOpen(false);
+                            logOutUser();
+                          }}
+                          className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-xs text-red-600 dark:text-red-400 font-medium cursor-pointer"
+                        >
+                          <LogOut size={14} />
+                          <span>Close Session</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </header>
 

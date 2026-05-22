@@ -42,11 +42,9 @@ import { Logo } from './Logo';
 
 interface LandingProps {
   onEnterApp: () => void;
-  onActivateDemo: () => void;
-  simulationActive: boolean;
 }
 
-export function LandingPage({ onEnterApp, onActivateDemo, simulationActive }: LandingProps) {
+export function LandingPage({ onEnterApp }: LandingProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeShowcase, setActiveShowcase] = useState<'cards' | 'savings' | 'business' | 'security'>('cards');
   const [legalTab, setLegalTab] = useState<'privacy' | 'terms' | 'cookie' | 'security' | 'acceptable' | null>(null);
@@ -190,13 +188,6 @@ export function LandingPage({ onEnterApp, onActivateDemo, simulationActive }: La
             >
               {currentTheme === 'light' ? <Sun size={15} /> : currentTheme === 'dark' ? <Moon size={15} /> : <Laptop size={15} />}
             </button>
-
-            <button 
-              onClick={onActivateDemo}
-              className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-mono underline underline-offset-4 px-3 py-2 cursor-pointer"
-            >
-              [Explore Live Demo]
-            </button>
             
             <button 
               onClick={onEnterApp}
@@ -269,12 +260,6 @@ export function LandingPage({ onEnterApp, onActivateDemo, simulationActive }: La
             
             <div className="pt-4 flex flex-col space-y-3">
               <button 
-                onClick={() => { setMobileMenuOpen(false); onActivateDemo(); }}
-                className="w-full text-center text-xs text-slate-700 dark:text-slate-300 font-mono py-2"
-              >
-                [Explore Live Demo]
-              </button>
-              <button 
                 onClick={() => { setMobileMenuOpen(false); onEnterApp(); }}
                 className="w-full h-11 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-black font-semibold text-xs flex items-center justify-center shadow-md"
               >
@@ -315,13 +300,6 @@ export function LandingPage({ onEnterApp, onActivateDemo, simulationActive }: La
               >
                 <span>Access Digital Services</span>
                 <ArrowRight size={15} />
-              </button>
-              
-              <button 
-                onClick={onActivateDemo}
-                className="h-12 px-6 rounded-xl border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 bg-white/40 dark:bg-white/5 text-xs text-slate-700 dark:text-slate-200 transition-all font-mono tracking-widest uppercase hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center space-x-2 cursor-pointer shadow-sm"
-              >
-                <span>Interactive Preview Portal</span>
               </button>
             </div>
 
@@ -1161,12 +1139,6 @@ export function LandingPage({ onEnterApp, onActivateDemo, simulationActive }: La
               <span>Launch Account Services</span>
               <ArrowRight size={14} />
             </button>
-            <button 
-              onClick={onActivateDemo}
-              className="h-12 px-8 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-all text-xs uppercase tracking-wider font-mono font-bold cursor-pointer bg-slate-50/50 dark:bg-white/5"
-            >
-              Explore Live Demo
-            </button>
           </div>
         </div>
       </section>
@@ -1212,7 +1184,7 @@ export function LandingPage({ onEnterApp, onActivateDemo, simulationActive }: La
           <div className="space-y-3">
             <h4 className="text-xs font-mono uppercase tracking-widest text-slate-905 dark:text-slate-300 font-bold">NYC Operations Office</h4>
             <ul className="space-y-2 text-[11px] text-slate-500 leading-relaxed font-mono">
-              <li><span className="text-slate-950 dark:text-slate-300 font-semibold">adereraadenike@gmail.com</span></li>
+              <li><span className="text-slate-950 dark:text-slate-300 font-semibold">support@morningbrightfinance.com</span></li>
               <li><span className="block text-slate-400">Wall Street Financial District, NYC</span></li>
               <li><span className="block text-slate-400">Toll-Free Helpline: 1-800-MBF-LIVE</span></li>
               <li><span className="block text-emerald-600 dark:text-emerald-400 font-bold text-[9px] uppercase tracking-wider mt-1 flex items-center">

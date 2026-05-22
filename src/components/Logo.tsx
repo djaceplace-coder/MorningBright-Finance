@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useId } from 'react';
 
 interface LogoProps {
   className?: string;
@@ -11,6 +11,10 @@ interface LogoProps {
 }
 
 export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps) {
+  const uid = useId();
+  const silverId = `silverGradient-${uid.replace(/:/g, '')}`;
+  const blueId = `blueGradient-${uid.replace(/:/g, '')}`;
+
   return (
     <div className={`shrink-0 transition-transform hover:scale-105 select-none ${className}`}>
       <svg
@@ -21,7 +25,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
       >
         <defs>
           {/* Silver/Platinum gradient for the rising sun emblem */}
-          <linearGradient id="silverGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={silverId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#ffffff" />
             <stop offset="35%" stopColor="#cbd5e1" />
             <stop offset="50%" stopColor="#e2e8f0" />
@@ -30,7 +34,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
           </linearGradient>
 
           {/* Deep premium digital banking blue/midnight gradient */}
-          <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id={blueId} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#0d2551" />
             <stop offset="30%" stopColor="#0a1d40" />
             <stop offset="100%" stopColor="#03081a" />
@@ -38,14 +42,13 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
         </defs>
 
         {withBackground && (
-          /* Rounded Squircle Background */
           <rect
             x="4"
             y="4"
             width="92"
             height="92"
             rx="24"
-            fill="url(#blueGradient)"
+            fill={`url(#${blueId})`}
             stroke="rgba(255,255,255,0.06)"
             strokeWidth="1"
           />
@@ -59,7 +62,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
             y1="63"
             x2="78"
             y2="63"
-            stroke="url(#silverGradient)"
+            stroke={`url(#${silverId})`}
             strokeWidth="3.2"
             strokeLinecap="round"
           />
@@ -67,17 +70,16 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
           {/* Center Sun Semi-Circle */}
           <path
             d="M 37 63 A 13 13 0 0 1 63 63 Z"
-            fill="url(#silverGradient)"
+            fill={`url(#${silverId})`}
           />
 
-          {/* 5 Radiating Sun Rays (with custom coordinates matching the logo perfectly) */}
           {/* Vertical Center Ray */}
           <line
             x1="50"
             y1="45"
             x2="50"
             y2="30"
-            stroke="url(#silverGradient)"
+            stroke={`url(#${silverId})`}
             strokeWidth="3"
             strokeLinecap="round"
           />
@@ -88,7 +90,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
             y1="48"
             x2="33"
             y2="34"
-            stroke="url(#silverGradient)"
+            stroke={`url(#${silverId})`}
             strokeWidth="3"
             strokeLinecap="round"
           />
@@ -99,7 +101,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
             y1="48"
             x2="67"
             y2="34"
-            stroke="url(#silverGradient)"
+            stroke={`url(#${silverId})`}
             strokeWidth="3"
             strokeLinecap="round"
           />
@@ -110,7 +112,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
             y1="54"
             x2="25"
             y2="47"
-            stroke="url(#silverGradient)"
+            stroke={`url(#${silverId})`}
             strokeWidth="3"
             strokeLinecap="round"
           />
@@ -121,7 +123,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
             y1="54"
             x2="75"
             y2="47"
-            stroke="url(#silverGradient)"
+            stroke={`url(#${silverId})`}
             strokeWidth="3"
             strokeLinecap="round"
           />

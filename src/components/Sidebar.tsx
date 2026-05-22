@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Home, 
   ArrowLeftRight, 
@@ -12,10 +12,13 @@ import {
   Settings, 
   ShieldAlert, 
   LogOut, 
+  User,
+  ChevronDown,
   Sparkles,
   Database,
   Radio
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useStore } from '../store';
 import { Logo } from './Logo';
 
@@ -25,7 +28,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ currentTab, onChangeTab }: SidebarProps) {
-  const { user, logOutUser, simulationActive, setSimulationMode } = useStore();
+  const { user, logOutUser } = useStore();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const menuItems = [
     { id: 'home', label: 'Home', icon: <Home size={18} /> },
@@ -50,20 +54,70 @@ export function Sidebar({ currentTab, onChangeTab }: SidebarProps) {
  
         {/* ACCOUNT SNAPSHOT BRAND */}
         {user && (
-          <div className="p-3.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-200/45 dark:bg-white/5 flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-              <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-xs font-mono uppercase">
-                {user.firstName[0]}{user.lastName[0]}
-              </span>
-            </div>
-            <div className="overflow-hidden">
-              <span className="block text-xs font-medium text-slate-900 dark:text-white tracking-tight truncate">
-                {user.firstName} {user.lastName}
-              </span>
-              <span className="block text-[9px] text-slate-500 font-mono truncate lowercase">
-                {user.email}
-              </span>
-            </div>
+          <div className="relative">
+            <button 
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-200/45 dark:bg-white/5 flex items-center justify-between cursor-pointer hover:bg-slate-200/80 dark:hover:bg-white/10 transition-colors text-left"
+            >
+              <div className="flex items-center space-x-3 overflow-hidden">
+                <div className="shrink-0 w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-xs font-mono uppercase">
+                    {user.firstName[0]}{user.lastName[0]}
+                  </span>
+                </div>
+                <div className="overflow-hidden">
+                  <span className="block text-xs font-medium text-slate-900 dark:text-white tracking-tight truncate">
+                    {user.firstName} {user.lastName}
+                  </span>
+                  <span className="block text-[9px] text-slate-500 font-mono truncate lowercase">
+                    {user.email}
+                  </span>
+                </div>
+              </div>
+              <ChevronDown size={14} className={`text-slate-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+              {isDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-xl shadow-lg shadow-black/5 dark:shadow-black/20 z-50 overflow-hidden"
+                >
+                  <div className="p-1.5 flex flex-col space-y-1">
+                    <button
+                      onClick={() => { onChangeTab('settings'); setIsDropdownOpen(false); }}
+                      className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-xs text-slate-600 dark:text-slate-300 font-medium cursor-pointer"
+                    >
+                      <User size={14} className="text-emerald-500" />
+                      <span>Profile Details</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => { onChangeTab('settings'); setIsDropdownOpen(false); }}
+                      className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-xs text-slate-600 dark:text-slate-300 font-medium cursor-pointer"
+                    >
+                      <Settings size={14} className="text-emerald-500" />
+                      <span>Security Settings</span>
+                    </button>
+
+                    <div className="h-px bg-slate-200 dark:bg-white/10 my-1 mx-2" />
+
+                    <button
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        logOutUser();
+                      }}
+                      className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-xs text-red-600 dark:text-red-400 font-medium cursor-pointer"
+                    >
+                      <LogOut size={14} />
+                      <span>Close Session</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
  
@@ -105,29 +159,7 @@ export function Sidebar({ currentTab, onChangeTab }: SidebarProps) {
  
       {/* FOOTER CONTROLS */}
       <div className="space-y-4">
-        {/* ENVIRONMENT PREFERENCE CHIP */}
-        <div className="p-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950 flex flex-col space-y-2">
-          <div className="flex items-center justify-between text-[9px] font-mono text-slate-400 dark:text-slate-500">
-            <span>Database Node:</span>
-            <span className={`w-2 h-2 rounded-full ${simulationActive ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
-          </div>
-          
-          <button 
-            onClick={() => setSimulationMode(!simulationActive)}
-            className="w-full py-1.5 rounded-lg border text-[9px] font-mono uppercase tracking-wider text-center cursor-pointer select-none transition-all font-semibold block bg-white dark:bg-slate-900 border-slate-200 dark:border-white/5 text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white"
-          >
-            {simulationActive ? '⚡ Simulation Sandbox' : '📡 Real Cloud Live'}
-          </button>
-        </div>
- 
-        {/* SECURE LOGOUT */}
-        <button
-          onClick={logOutUser}
-          className="w-full h-10 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-red-500/5 transition-all text-xs font-semibold uppercase tracking-wider flex items-center justify-center space-x-2 border border-slate-200 dark:border-white/5 cursor-pointer"
-        >
-          <LogOut size={14} />
-          <span>Close Session</span>
-        </button>
+        {/* Placeholder if needed */}
       </div>
 
     </aside>

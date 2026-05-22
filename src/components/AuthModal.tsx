@@ -23,7 +23,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const [lastName, setLastName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const { signUpUser, logInUser, loading, errorMessage, clearError, simulationActive, setSimulationMode } = useStore();
+  const { signUpUser, logInUser, loading, errorMessage, clearError } = useStore();
 
   if (!isOpen) return null;
 
@@ -57,7 +57,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
   const handleDemoFill = () => {
     clearError();
-    setEmail('adereraadenike@gmail.com');
+    setEmail('support@morningbrightfinance.com');
     setPassword('finance101');
     setIsSignUp(false);
   };
@@ -218,39 +218,6 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
           >
             {isSignUp ? 'Already registered? Authorize credentials' : 'Need sub-account? Create digital vault'}
           </button>
-
-          {/* SIMULATION PREFERENCE CONTROLLER */}
-          <div className="pt-4 border-t border-white/5 flex flex-col space-y-2">
-            <div className="flex justify-between items-center text-[10px] font-mono text-slate-500 px-1">
-              <span>Environment Provider:</span>
-              <button 
-                type="button"
-                onClick={() => setSimulationMode(!simulationActive)}
-                className={`px-2 py-0.5 rounded font-bold text-[9px] uppercase tracking-wider transition-all ${
-                  simulationActive 
-                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
-                    : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                }`}
-              >
-                {simulationActive ? 'Local Simulator' : 'Real Postgres Supabase'}
-              </button>
-            </div>
-            
-            <p className="text-[10px] text-slate-600 leading-normal text-left px-1">
-              {simulationActive 
-                ? 'Offline Simulator mode is active. You will be logged into a fully responsive local wallet bypasses cloud connection blocks.' 
-                : 'Real Supabase mode matches network calls to PostgreSQL. If cloud database fails to sync, toggle Sandbox Simulator in landing view.'}
-            </p>
-
-            {/* QUICK FILL DEMO FOR REVIEWER */}
-            <button 
-              type="button"
-              onClick={handleDemoFill}
-              className="text-[9px] text-center text-emerald-400 hover:text-emerald-300 font-mono block uppercase tracking-wider border border-emerald-500/15 bg-emerald-500/5 py-1.5 rounded-lg font-bold"
-            >
-              🚀 Bypass Sign In (Auto-fill Demo VIP)
-            </button>
-          </div>
         </div>
       </motion.div>
     </div>

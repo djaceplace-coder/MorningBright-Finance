@@ -60,8 +60,7 @@ interface BankState {
   // App context flags
   loading: boolean;
   authChecked: boolean;
-  simulationActive: boolean;
-  biometricAuthenticated: boolean;
+    biometricAuthenticated: boolean;
   pwaInstalled: boolean;
 
   // Error notifications
@@ -77,8 +76,7 @@ interface BankState {
   logOutUser: () => Promise<void>;
   checkBiometrics: () => Promise<boolean>;
   toggleBiometrics: (enabled: boolean) => void;
-  setSimulationMode: (active: boolean) => void;
-  clearError: () => void;
+    clearError: () => void;
   
   // Realtime loaders
   initRealtimeSubscriptions: (uid: string) => void;
@@ -110,8 +108,7 @@ interface BankState {
 
 export const useStore = create<BankState>((set, get) => {
   // Load initial simulation settings from local storage
-  const isSimulation = localStorage.getItem('mb_simulation') !== 'false';
-
+  
   return {
     user: null,
     balance: null,
@@ -125,31 +122,19 @@ export const useStore = create<BankState>((set, get) => {
     
     loading: false,
     authChecked: false,
-    simulationActive: isSimulation,
-    biometricAuthenticated: false,
+        biometricAuthenticated: false,
     pwaInstalled: false,
     errorMessage: null,
     listeners: [],
 
     clearError: () => set({ errorMessage: null }),
 
-    setSimulationMode: (active: boolean) => {
-      localStorage.setItem('mb_simulation', String(active));
-      set({ simulationActive: active });
-      // Reload profile triggers
-      const currentUi = get().user?.uid;
-      if (currentUi) {
-        get().initRealtimeSubscriptions(currentUi);
-      }
-    },
-
+    
     initAuthListener: () => {
       // Restore cached session immediately
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
-          if (!get().simulationActive) {
-            get().initRealtimeSubscriptions(session.user.id);
-          }
+          get().initRealtimeSubscriptions(session.user.id);
         } else {
           set({ authChecked: true });
         }
@@ -157,8 +142,7 @@ export const useStore = create<BankState>((set, get) => {
 
       // Stream auth events
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (get().simulationActive) return;
-
+        
         if (session?.user) {
           get().initRealtimeSubscriptions(session.user.id);
         } else {
@@ -185,61 +169,7 @@ export const useStore = create<BankState>((set, get) => {
     signUpUser: async (email, pass, first, last) => {
       set({ loading: true, errorMessage: null });
       
-      if (get().simulationActive) {
-        // Simulation path
-        setTimeout(() => {
-          const fakeUid = 'sim_' + Math.random().toString(36).substring(2, 10);
-          const fakeProfile: UserProfile = {
-            uid: fakeUid,
-            firstName: first,
-            lastName: last,
-            email,
-            isVerified: true,
-            isAdmin: email === 'adereraadenike@gmail.com',
-            isFrozen: false,
-            isSuspended: false,
-            biometricsEnabled: false,
-            createdAt: new Date().toISOString()
-          };
-
-          const fakeBalance: UserBalance = {
-            uid: fakeUid,
-            checking: 5000.00,
-            savings: 25000.00,
-            updatedAt: new Date().toISOString()
-          };
-
-          const fakeSettings: UserSecuritySettings = {
-            uid: fakeUid,
-            faceIdEnabled: false,
-            webAuthnConfigured: false,
-            pushNotifications: true,
-            emailStatements: true,
-            twoFactorEnabled: false,
-            theme: 'system'
-          };
-
-          localStorage.setItem(`sim_user_${fakeUid}`, JSON.stringify(fakeProfile));
-          localStorage.setItem(`sim_balance_${fakeUid}`, JSON.stringify(fakeBalance));
-          localStorage.setItem(`sim_settings_${fakeUid}`, JSON.stringify(fakeSettings));
-          localStorage.setItem(`sim_txs_${fakeUid}`, JSON.stringify(INITIAL_TRANSACTIONS(fakeUid)));
-          localStorage.setItem(`sim_cards_${fakeUid}`, JSON.stringify(INITIAL_CARDS(fakeUid)));
-          localStorage.setItem(`sim_savings_${fakeUid}`, JSON.stringify(INITIAL_SAVINGS(fakeUid)));
-          localStorage.setItem(`sim_notifications_${fakeUid}`, JSON.stringify(INITIAL_NOTIFICATIONS(fakeUid)));
-
-          set({
-            user: fakeProfile,
-            balance: fakeBalance,
-            transactions: INITIAL_TRANSACTIONS(fakeUid),
-            cards: INITIAL_CARDS(fakeUid),
-            savings: INITIAL_SAVINGS(fakeUid),
-            notifications: INITIAL_NOTIFICATIONS(fakeUid),
-            settings: fakeSettings,
-            loading: false
-          });
-        }, 1500);
-        return;
-      }
+      
 
       // Real auth register via Supabase
       try {
@@ -264,7 +194,7 @@ export const useStore = create<BankState>((set, get) => {
           lastName: last,
           email,
           isVerified: false, 
-          isAdmin: email === 'adereraadenike@gmail.com',
+          isAdmin: email === 'support@morningbrightfinance.com',
           isFrozen: false,
           isSuspended: false,
           biometricsEnabled: false,
@@ -323,74 +253,7 @@ export const useStore = create<BankState>((set, get) => {
     logInUser: async (email, pass) => {
       set({ loading: true, errorMessage: null });
 
-      if (get().simulationActive) {
-        // Find existing sim user or bootstrap simulation
-        setTimeout(() => {
-          const simUid = 'sim_demo';
-          const stored = localStorage.getItem(`sim_user_${simUid}`);
-          if (stored) {
-            set({
-              user: JSON.parse(stored),
-              balance: JSON.parse(localStorage.getItem(`sim_balance_${simUid}`) || '{}'),
-              transactions: JSON.parse(localStorage.getItem(`sim_txs_${simUid}`) || '[]'),
-              cards: JSON.parse(localStorage.getItem(`sim_cards_${simUid}`) || '[]'),
-              savings: JSON.parse(localStorage.getItem(`sim_savings_${simUid}`) || '[]'),
-              notifications: JSON.parse(localStorage.getItem(`sim_notifications_${simUid}`) || '[]'),
-              settings: JSON.parse(localStorage.getItem(`sim_settings_${simUid}`) || '{}'),
-              loading: false
-            });
-          } else {
-            // Bootstrap a fully responsive sim workspace
-            const profile: UserProfile = {
-              uid: simUid,
-              firstName: 'Alex',
-              lastName: 'Morningstar',
-              email,
-              isVerified: true,
-              isAdmin: email === 'adereraadenike@gmail.com',
-              isFrozen: false,
-              isSuspended: false,
-              biometricsEnabled: false,
-              createdAt: new Date().toISOString()
-            };
-            const balance: UserBalance = {
-              uid: simUid,
-              checking: 5000.00,
-              savings: 25000.00,
-              updatedAt: new Date().toISOString()
-            };
-            const settingsObj: UserSecuritySettings = {
-              uid: simUid,
-              faceIdEnabled: true,
-              webAuthnConfigured: true,
-              pushNotifications: true,
-              emailStatements: false,
-              twoFactorEnabled: true,
-              theme: 'system'
-            };
-
-            localStorage.setItem(`sim_user_${simUid}`, JSON.stringify(profile));
-            localStorage.setItem(`sim_balance_${simUid}`, JSON.stringify(balance));
-            localStorage.setItem(`sim_settings_${simUid}`, JSON.stringify(settingsObj));
-            localStorage.setItem(`sim_txs_${simUid}`, JSON.stringify(INITIAL_TRANSACTIONS(simUid)));
-            localStorage.setItem(`sim_cards_${simUid}`, JSON.stringify(INITIAL_CARDS(simUid)));
-            localStorage.setItem(`sim_savings_${simUid}`, JSON.stringify(INITIAL_SAVINGS(simUid)));
-            localStorage.setItem(`sim_notifications_${simUid}`, JSON.stringify(INITIAL_NOTIFICATIONS(simUid)));
-
-            set({
-              user: profile,
-              balance,
-              transactions: INITIAL_TRANSACTIONS(simUid),
-              cards: INITIAL_CARDS(simUid),
-              savings: INITIAL_SAVINGS(simUid),
-              notifications: INITIAL_NOTIFICATIONS(simUid),
-              settings: settingsObj,
-              loading: false
-            });
-          }
-        }, 1200);
-        return;
-      }
+      
 
       // Real auth user
       try {
@@ -404,9 +267,7 @@ export const useStore = create<BankState>((set, get) => {
 
     logOutUser: async () => {
       get().clearSubscriptions();
-      if (!get().simulationActive) {
-        await supabase.auth.signOut();
-      }
+      await supabase.auth.signOut();
       set({
         user: null,
         balance: null,
@@ -433,16 +294,12 @@ export const useStore = create<BankState>((set, get) => {
       if (u) {
         const nextProfile = { ...u, biometricsEnabled: enabled };
         set({ user: nextProfile });
-        if (get().simulationActive) {
-          localStorage.setItem(`sim_user_${u.uid}`, JSON.stringify(nextProfile));
-        } else {
           try {
             const { error } = await supabase.from('users').update({ biometrics_enabled: enabled }).eq('id', u.uid);
             if (error) throw error;
           } catch (e) {
             handleSupabaseError(e, OperationType.UPDATE, `users/${u.uid}`);
           }
-        }
       }
     },
 
@@ -455,10 +312,7 @@ export const useStore = create<BankState>((set, get) => {
       get().clearSubscriptions();
       set({ loading: true });
 
-      if (get().simulationActive) {
-        set({ loading: false, authChecked: true });
-        return;
-      }
+      
 
       try {
         // Fetch baseline records immediately
@@ -574,34 +428,7 @@ export const useStore = create<BankState>((set, get) => {
 
       const newChecking = currentBalance.checking - amount;
 
-      if (get().simulationActive) {
-        // Simulation path
-        const updatedBalance = { ...currentBalance, checking: newChecking, updatedAt: new Date().toISOString() };
-        const updatedTxs = [txSent, ...get().transactions];
-        
-        const notif: BankNotification = {
-          id: 'n_' + Math.random().toString(36).substring(2, 10),
-          userId: userObj.uid,
-          title: 'Transfer Dispatched',
-          message: `Your wire of $${amount.toFixed(2)} to ${recipientEmail} has been securely authorized.`,
-          isRead: false,
-          type: 'success',
-          createdAt: new Date().toISOString()
-        };
-        const updatedNotifs = [notif, ...get().notifications];
-
-        localStorage.setItem(`sim_balance_${userObj.uid}`, JSON.stringify(updatedBalance));
-        localStorage.setItem(`sim_txs_${userObj.uid}`, JSON.stringify(updatedTxs));
-        localStorage.setItem(`sim_notifications_${userObj.uid}`, JSON.stringify(updatedNotifs));
-
-        set({
-          balance: updatedBalance,
-          transactions: updatedTxs,
-          notifications: updatedNotifs,
-          loading: false
-        });
-        return;
-      }
+      
 
       // Real auth post via Supabase transactional entities updates
       try {
@@ -704,30 +531,7 @@ export const useStore = create<BankState>((set, get) => {
         status: TransactionStatus.COMPLETED
       };
 
-      if (get().simulationActive) {
-        localStorage.setItem(`sim_balance_${u.uid}`, JSON.stringify(newBalanceObj));
-        const finalTxs = [newTx, ...get().transactions];
-        localStorage.setItem(`sim_txs_${u.uid}`, JSON.stringify(finalTxs));
-        
-        const notif: BankNotification = {
-          id: 'n_f_' + Math.random().toString(36).substring(2,10),
-          userId: u.uid,
-          title: 'External Deposit Cleared',
-          message: `Your self-wire funding of $${amount.toFixed(2)} into ${target} has cleared.`,
-          isRead: false,
-          type: 'success',
-          createdAt: new Date().toISOString()
-        };
-        const finalNotifs = [notif, ...get().notifications];
-        localStorage.setItem(`sim_notifications_${u.uid}`, JSON.stringify(finalNotifs));
-
-        set({
-          balance: newBalanceObj,
-          transactions: finalTxs,
-          notifications: finalNotifs
-        });
-        return;
-      }
+      
 
       try {
         await supabase.from('balances').update({
@@ -772,12 +576,7 @@ export const useStore = create<BankState>((set, get) => {
         createdAt: new Date().toISOString()
       };
 
-      if (get().simulationActive) {
-        const updatedCards = [...get().cards, newCard];
-        localStorage.setItem(`sim_cards_${u.uid}`, JSON.stringify(updatedCards));
-        set({ cards: updatedCards });
-        return;
-      }
+      
 
       try {
         await supabase.from('cards').insert(mapCardToDb(newCard));
@@ -791,12 +590,7 @@ export const useStore = create<BankState>((set, get) => {
       if (!targetCard) return;
 
       const nextFrozen = !targetCard.isFrozen;
-      if (get().simulationActive) {
-        const nextCards = get().cards.map(c => c.id === cardId ? { ...c, isFrozen: nextFrozen } : c);
-        localStorage.setItem(`sim_cards_${get().user?.uid}`, JSON.stringify(nextCards));
-        set({ cards: nextCards });
-        return;
-      }
+      
 
       try {
         await supabase.from('cards').update({ is_frozen: nextFrozen }).eq('id', cardId);
@@ -806,12 +600,7 @@ export const useStore = create<BankState>((set, get) => {
     },
 
     updateCardLimit: async (cardId, limit) => {
-      if (get().simulationActive) {
-        const nextCards = get().cards.map(c => c.id === cardId ? { ...c, spendingLimit: limit } : c);
-        localStorage.setItem(`sim_cards_${get().user?.uid}`, JSON.stringify(nextCards));
-        set({ cards: nextCards });
-        return;
-      }
+      
 
       try {
         await supabase.from('cards').update({ spending_limit: limit }).eq('id', cardId);
@@ -836,12 +625,7 @@ export const useStore = create<BankState>((set, get) => {
         createdAt: new Date().toISOString()
       };
 
-      if (get().simulationActive) {
-        const updated = [...get().savings, goal];
-        localStorage.setItem(`sim_savings_${u.uid}`, JSON.stringify(updated));
-        set({ savings: updated });
-        return;
-      }
+      
 
       try {
         await supabase.from('savings_goals').insert(mapSavingsToDb(goal));
@@ -883,21 +667,7 @@ export const useStore = create<BankState>((set, get) => {
         status: TransactionStatus.COMPLETED
       };
 
-      if (get().simulationActive) {
-        const updatedGoals = get().savings.map(s => s.id === goalId ? { ...s, currentAmount: nextGoalVal } : s);
-        localStorage.setItem(`sim_savings_${u.uid}`, JSON.stringify(updatedGoals));
-        localStorage.setItem(`sim_balance_${u.uid}`, JSON.stringify(newBalanceObj));
-        
-        const nextTxs = [customTx, ...get().transactions];
-        localStorage.setItem(`sim_txs_${u.uid}`, JSON.stringify(nextTxs));
-
-        set({
-          savings: updatedGoals,
-          balance: newBalanceObj,
-          transactions: nextTxs
-        });
-        return;
-      }
+      
 
       try {
         await supabase.from('savings_goals').update({ current_amount: nextGoalVal }).eq('id', goalId);
@@ -919,12 +689,7 @@ export const useStore = create<BankState>((set, get) => {
 
       const nextAuto = !targetGoal.autoSaveEnabled;
 
-      if (get().simulationActive) {
-        const updated = get().savings.map(s => s.id === goalId ? { ...s, autoSaveEnabled: nextAuto, autoSavePercentage: percentage } : s);
-        localStorage.setItem(`sim_savings_${u.uid}`, JSON.stringify(updated));
-        set({ savings: updated });
-        return;
-      }
+      
 
       try {
         await supabase.from('savings_goals').update({
@@ -937,12 +702,7 @@ export const useStore = create<BankState>((set, get) => {
     },
 
     markNotificationAsRead: async (id) => {
-      if (get().simulationActive) {
-        const updated = get().notifications.map(n => n.id === id ? { ...n, isRead: true } : n);
-        localStorage.setItem(`sim_notifications_${get().user?.uid}`, JSON.stringify(updated));
-        set({ notifications: updated });
-        return;
-      }
+      
 
       try {
         await supabase.from('notifications').update({ is_read: true }).eq('id', id);
@@ -955,12 +715,7 @@ export const useStore = create<BankState>((set, get) => {
       const u = get().user;
       if (!u) return;
 
-      if (get().simulationActive) {
-        const nextProf = { ...u, firstName: first, lastName: last };
-        localStorage.setItem(`sim_user_${u.uid}`, JSON.stringify(nextProf));
-        set({ user: nextProf });
-        return;
-      }
+      
 
       try {
         await supabase.from('users').update({
@@ -974,10 +729,7 @@ export const useStore = create<BankState>((set, get) => {
 
     updatePasswordSecure: async (pass) => {
       set({ loading: true, errorMessage: null });
-      if (get().simulationActive) {
-        setTimeout(() => set({ loading: false }), 800);
-        return;
-      }
+      
 
       try {
         const { error } = await supabase.auth.updateUser({ password: pass });
@@ -993,11 +745,7 @@ export const useStore = create<BankState>((set, get) => {
       if (!s) return;
 
       const nextSettings = { ...s, [key]: val };
-      if (get().simulationActive) {
-        localStorage.setItem(`sim_settings_${s.uid}`, JSON.stringify(nextSettings));
-        set({ settings: nextSettings });
-        return;
-      }
+      
 
       try {
         await supabase.from('settings').update({ [mapSettingsToDb({ [key]: val } as any) as any]: val }).eq('uid', s.uid);
@@ -1024,48 +772,7 @@ export const useStore = create<BankState>((set, get) => {
     // --- ADMINISTRATIVE DASHBOARD CONTROLS ---
 
     adminLoadUsers: async () => {
-      if (get().simulationActive) {
-        const mockAccounts: UserProfile[] = [
-          {
-            uid: 'sim_demo',
-            firstName: 'Alex',
-            lastName: 'Morningstar',
-            email: 'demo@morningbright.com',
-            isVerified: true,
-            isAdmin: false,
-            isFrozen: false,
-            isSuspended: false,
-            biometricsEnabled: true,
-            createdAt: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString()
-          },
-          {
-            uid: 'sim_demo_admin',
-            firstName: 'System',
-            lastName: 'Admin',
-            email: 'adereraadenike@gmail.com',
-            isVerified: true,
-            isAdmin: true,
-            isFrozen: false,
-            isSuspended: false,
-            biometricsEnabled: false,
-            createdAt: new Date(Date.now() - 60 * 24 * 3600 * 1000).toISOString()
-          },
-          {
-            uid: 'sim_client_3',
-            firstName: 'Elizabeth',
-            lastName: 'Sterling',
-            email: 'liz@sterlingcaps.io',
-            isVerified: true,
-            isAdmin: false,
-            isFrozen: true,
-            isSuspended: false,
-            biometricsEnabled: false,
-            createdAt: new Date(Date.now() - 15 * 24 * 3600 * 1000).toISOString()
-          }
-        ];
-        set({ usersList: mockAccounts });
-        return;
-      }
+      
 
       try {
         const { data, error } = await supabase.from('users').select('*');
@@ -1079,7 +786,7 @@ export const useStore = create<BankState>((set, get) => {
     },
 
     adminEditBalance: async (userId, checking, savings) => {
-      const adminMail = get().user?.email || 'admin@morningbright.com';
+      const adminMail = get().user?.email || 'support@morningbrightfinance.com';
       const logId = 'log_' + Math.random().toString(36).substring(2,10);
 
       const log: AdminLog = {
@@ -1092,32 +799,7 @@ export const useStore = create<BankState>((set, get) => {
         timestamp: new Date().toISOString()
       };
 
-      if (get().simulationActive) {
-        const targetBal = { uid: userId, checking, savings, updatedAt: new Date().toISOString() };
-        localStorage.setItem(`sim_balance_${userId}`, JSON.stringify(targetBal));
-        
-        const nextLogs = [log, ...get().adminLogs];
-        localStorage.setItem('sim_admin_logs', JSON.stringify(nextLogs));
-
-        const notif: BankNotification = {
-          id: 'n_a_' + Math.random().toString(36).substring(2,10),
-          userId,
-          title: 'Account Ledger Adjusted',
-          message: `Your balance balances have been administratively updated to Checking: $${checking.toFixed(2)}, Savings: $${savings.toFixed(2)}`,
-          isRead: false,
-          type: 'alert',
-          createdAt: new Date().toISOString()
-        };
-        const currentSimNotifs = JSON.parse(localStorage.getItem(`sim_notifications_${userId}`) || '[]');
-        localStorage.setItem(`sim_notifications_${userId}`, JSON.stringify([notif, ...currentSimNotifs]));
-
-        set({ adminLogs: nextLogs });
-        
-        if (get().user?.uid === userId) {
-          set({ balance: targetBal, notifications: [notif, ...get().notifications] });
-        }
-        return;
-      }
+      
 
       try {
         await supabase.from('balances').update({
@@ -1162,28 +844,14 @@ export const useStore = create<BankState>((set, get) => {
       const log: AdminLog = {
         id: logId,
         adminId: get().user?.uid || 'admin_caller',
-        adminEmail: get().user?.email || 'admin@morningbright.com',
+        adminEmail: get().user?.email || 'support@morningbrightfinance.com',
         action: 'INSERT_TRANSACTION',
         targetUserId: userId,
         details: `Injected transaction ledger: $${amount.toFixed(2)} [${type}] at ${merchant}`,
         timestamp: new Date().toISOString()
       };
 
-      if (get().simulationActive) {
-        const storedTxs = JSON.parse(localStorage.getItem(`sim_txs_${userId}`) || '[]');
-        const nextTxs = [transaction, ...storedTxs];
-        localStorage.setItem(`sim_txs_${userId}`, JSON.stringify(nextTxs));
-        
-        const nextLogs = [log, ...get().adminLogs];
-        localStorage.setItem('sim_admin_logs', JSON.stringify(nextLogs));
-
-        set({ adminLogs: nextLogs });
-
-        if (get().user?.uid === userId) {
-          set({ transactions: nextTxs });
-        }
-        return;
-      }
+      
 
       try {
         await supabase.from('transactions').insert(mapTransactionToDb(transaction));
@@ -1198,32 +866,14 @@ export const useStore = create<BankState>((set, get) => {
       const log: AdminLog = {
         id: logId,
         adminId: get().user?.uid || 'admin_caller',
-        adminEmail: get().user?.email || 'admin@morningbright.com',
+        adminEmail: get().user?.email || 'support@morningbrightfinance.com',
         action: frozen ? 'FREEZE_USER' : 'UNFREEZE_USER',
         targetUserId: userId,
         details: `${frozen ? 'Froze' : 'Unfroze'} transactions channels and card capabilities`,
         timestamp: new Date().toISOString()
       };
 
-      if (get().simulationActive) {
-        const updatedList = get().usersList.map(u => u.uid === userId ? { ...u, isFrozen: frozen } : u);
-        set({ usersList: updatedList });
-
-        const targetStored = localStorage.getItem(`sim_user_${userId}`);
-        if (targetStored) {
-          const parsed = JSON.parse(targetStored);
-          parsed.isFrozen = frozen;
-          localStorage.setItem(`sim_user_${userId}`, JSON.stringify(parsed));
-          if (get().user?.uid === userId) {
-            set({ user: parsed });
-          }
-        }
-
-        const nextLogs = [log, ...get().adminLogs];
-        localStorage.setItem('sim_admin_logs', JSON.stringify(nextLogs));
-        set({ adminLogs: nextLogs });
-        return;
-      }
+      
 
       try {
         await supabase.from('users').update({ is_frozen: frozen }).eq('id', userId);
@@ -1238,32 +888,14 @@ export const useStore = create<BankState>((set, get) => {
       const log: AdminLog = {
         id: logId,
         adminId: get().user?.uid || 'admin_caller',
-        adminEmail: get().user?.email || 'admin@morningbright.com',
+        adminEmail: get().user?.email || 'support@morningbrightfinance.com',
         action: suspended ? 'SUSPEND_USER' : 'UNSUSPEND_USER',
         targetUserId: userId,
         details: `${suspended ? 'Suspended' : 'Reactivated'} user security token access`,
         timestamp: new Date().toISOString()
       };
 
-      if (get().simulationActive) {
-        const updatedList = get().usersList.map(u => u.uid === userId ? { ...u, isSuspended: suspended } : u);
-        set({ usersList: updatedList });
-
-        const targetStored = localStorage.getItem(`sim_user_${userId}`);
-        if (targetStored) {
-          const parsed = JSON.parse(targetStored);
-          parsed.isSuspended = suspended;
-          localStorage.setItem(`sim_user_${userId}`, JSON.stringify(parsed));
-          if (get().user?.uid === userId) {
-            set({ user: parsed });
-          }
-        }
-
-        const nextLogs = [log, ...get().adminLogs];
-        localStorage.setItem('sim_admin_logs', JSON.stringify(nextLogs));
-        set({ adminLogs: nextLogs });
-        return;
-      }
+      
 
       try {
         await supabase.from('users').update({ is_suspended: suspended }).eq('id', userId);
@@ -1280,7 +912,7 @@ export const useStore = create<BankState>((set, get) => {
       const log: AdminLog = {
         id: logId,
         adminId: get().user?.uid || 'admin_caller',
-        adminEmail: get().user?.email || 'admin@morningbright.com',
+        adminEmail: get().user?.email || 'support@morningbrightfinance.com',
         action: 'PUSH_NOTIFICATION',
         targetUserId: userId,
         details: `Dispatched direct notify message: "${title}"`,
@@ -1297,21 +929,7 @@ export const useStore = create<BankState>((set, get) => {
         createdAt: new Date().toISOString()
       };
 
-      if (get().simulationActive) {
-        const storedNotifs = JSON.parse(localStorage.getItem(`sim_notifications_${userId}`) || '[]');
-        const nextNotifs = [notif, ...storedNotifs];
-        localStorage.setItem(`sim_notifications_${userId}`, JSON.stringify(nextNotifs));
-
-        const nextLogs = [log, ...get().adminLogs];
-        localStorage.setItem('sim_admin_logs', JSON.stringify(nextLogs));
-
-        set({ adminLogs: nextLogs });
-
-        if (get().user?.uid === userId) {
-          set({ notifications: nextNotifs });
-        }
-        return;
-      }
+      
 
       try {
         await supabase.from('notifications').insert(mapNotificationToDb(notif));
@@ -1322,27 +940,7 @@ export const useStore = create<BankState>((set, get) => {
     },
 
     adminLoadLogs: async () => {
-      if (get().simulationActive) {
-        const cached = localStorage.getItem('sim_admin_logs');
-        if (cached) {
-          set({ adminLogs: JSON.parse(cached) });
-        } else {
-          const starterLogs: AdminLog[] = [
-            {
-              id: 'log_starter_1',
-              adminId: 'sim_demo_admin',
-              adminEmail: 'adereraadenike@gmail.com',
-              action: 'BOOTSTRAP_SYSTEM',
-              targetUserId: 'ALL',
-              details: 'Seeded initial credit ledger and digital checking vaults.',
-              timestamp: new Date(Date.now() - 3600 * 1000).toISOString()
-            }
-          ];
-          localStorage.setItem('sim_admin_logs', JSON.stringify(starterLogs));
-          set({ adminLogs: starterLogs });
-        }
-        return;
-      }
+      
 
       try {
         const { data, error } = await supabase.from('admin_logs').select('*').order('timestamp', { ascending: false });

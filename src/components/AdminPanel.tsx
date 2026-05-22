@@ -30,8 +30,7 @@ export function AdminPanel() {
     adminAddSystemTransaction, 
     adminPushSystemNotification, 
     adminFreezeUser, 
-    adminSuspendUser,
-    simulationActive 
+    adminSuspendUser
   } = useStore();
 
   const [selectedUserId, setSelectedUserId] = useState<string>('');
