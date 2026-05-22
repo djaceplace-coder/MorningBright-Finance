@@ -14,11 +14,14 @@ export function BillsView() {
   const [selectedBill, setSelectedBill] = useState<any>(null);
 
   const predefinedBills = [
-    { id: '1', name: 'Electric Utility', type: 'utility', amount: 145.20, dueDate: '2026-05-28' },
-    { id: '2', name: 'Water & Sewer', type: 'utility', amount: 65.10, dueDate: '2026-05-30' },
-    { id: '3', name: 'Internet Provider', type: 'subscription', amount: 89.99, dueDate: '2026-06-02' },
-    { id: '4', name: 'Car Insurance', type: 'insurance', amount: 210.00, dueDate: '2026-06-05' },
-    { id: '5', name: 'Streaming Service', type: 'subscription', amount: 15.99, dueDate: '2026-06-10' },
+    { id: '1', name: 'Pacific Gas & Electric', type: 'utility', amount: 145.20, dueDate: '2026-05-28' },
+    { id: '2', name: 'AT&T Wireless', type: 'telecom', amount: 95.50, dueDate: '2026-05-30' },
+    { id: '3', name: 'Xfinity Internet', type: 'subscription', amount: 89.99, dueDate: '2026-06-02' },
+    { id: '4', name: 'Geico Auto Insurance', type: 'insurance', amount: 210.00, dueDate: '2026-06-05' },
+    { id: '5', name: 'Netflix Subscription', type: 'subscription', amount: 15.99, dueDate: '2026-06-10' },
+    { id: '6', name: 'Chase Credit Card', type: 'credit card', amount: 450.00, dueDate: '2026-06-12' },
+    { id: '7', name: 'Planet Fitness', type: 'membership', amount: 24.99, dueDate: '2026-06-15' },
+    { id: '8', name: 'State Farm Home', type: 'insurance', amount: 135.00, dueDate: '2026-06-20' },
   ];
 
   const payBill = async () => {

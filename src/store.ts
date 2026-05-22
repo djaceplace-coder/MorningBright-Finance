@@ -243,6 +243,8 @@ export const useStore = create<BankState>((set, get) => {
           firstName: first,
           lastName: last,
           email,
+          accountNumber: Math.floor(1000000000 + Math.random() * 9000000000).toString(),
+          routingNumber: '122105155',
           isVerified: false, 
           isAdmin: email === 'support@morningbrightfinance.com',
           isFrozen: false,
@@ -265,7 +267,7 @@ export const useStore = create<BankState>((set, get) => {
           pushNotifications: true,
           emailStatements: true,
           twoFactorEnabled: false,
-          theme: 'system'
+          theme: 'light'
         };
 
         // Insert primary relational credentials
@@ -405,6 +407,8 @@ export const useStore = create<BankState>((set, get) => {
               firstName: first,
               lastName: last,
               email,
+              accountNumber: Math.floor(1000000000 + Math.random() * 9000000000).toString(),
+              routingNumber: '122105155',
               isVerified: false, 
               isAdmin: email === 'support@morningbrightfinance.com',
               isFrozen: false,
@@ -427,7 +431,7 @@ export const useStore = create<BankState>((set, get) => {
                pushNotifications: true,
                emailStatements: true,
                twoFactorEnabled: false,
-               theme: 'system'
+               theme: 'light'
             };
 
             const mappedUser = mapUserToDb(profile);
@@ -725,12 +729,12 @@ export const useStore = create<BankState>((set, get) => {
       const u = get().user;
       if (!u) return;
 
-      const randomDigits = () => Math.floor(1000 + Math.random() * 9000);
+      const generateFullCard = () => Array.from({length: 4}, () => Math.floor(1000 + Math.random() * 9000).toString()).join(' ');
       const newCard: VirtualCard = {
         id: 'card_' + Math.random().toString(36).substring(2,10),
         userId: u.uid,
         cardholderName: holder.toUpperCase(),
-        cardNumber: `•••• •••• •••• ${randomDigits()}`,
+        cardNumber: generateFullCard(),
         expiryDate: `${String(new Date().getMonth() + 1).padStart(2, '0')}/${String(new Date().getFullYear() + 6).substring(2)}`,
         cvv: String(Math.floor(100 + Math.random() * 900)),
         isFrozen: false,

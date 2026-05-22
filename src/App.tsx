@@ -65,7 +65,7 @@ export default function App() {
       localStorage.setItem('mb_theme', t);
     };
 
-    const targetTheme = settings?.theme || (localStorage.getItem('mb_theme') as any) || 'system';
+    const targetTheme = settings?.theme || (localStorage.getItem('mb_theme') as any) || 'light';
     applyTheme(targetTheme);
 
     if (targetTheme === 'system') {

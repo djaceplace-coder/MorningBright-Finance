@@ -12,6 +12,9 @@ create table public.users (
     first_name text not null,
     last_name text not null,
     email text unique not null,
+    account_number text,
+    routing_number text,
+    pin_code text,
     is_verified boolean default false,
     is_admin boolean default false,
     is_frozen boolean default false,
@@ -283,7 +286,7 @@ create table public.settings (
     push_notifications boolean default true not null,
     email_statements boolean default true not null,
     two_factor_enabled boolean default false not null,
-    theme text default 'system' not null
+    theme text default 'light' not null
 );
 
 alter table public.settings enable row level security;

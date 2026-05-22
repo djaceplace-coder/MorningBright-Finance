@@ -35,6 +35,9 @@ export interface UserProfile {
   firstName: string;
   lastName: string;
   email: string;
+  accountNumber?: string;
+  routingNumber?: string;
+  pinCode?: string;
   isVerified: boolean;
   isAdmin: boolean;
   isFrozen: boolean;

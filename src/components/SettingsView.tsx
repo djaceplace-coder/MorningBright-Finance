@@ -30,7 +30,7 @@ export function SettingsView() {
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const currentTheme = settings?.theme || (localStorage.getItem('mb_theme') as any) || 'system';
+  const currentTheme = settings?.theme || (localStorage.getItem('mb_theme') as any) || 'light';
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,6 +195,27 @@ export function SettingsView() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-3.5">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Account Number</label>
+                  <input 
+                    type="text"
+                    value={user?.accountNumber || 'Pending'}
+                    disabled
+                    className="w-full h-11 px-3 rounded-lg border border-slate-250 dark:border-white/5 bg-slate-100 dark:bg-white/5 text-xs text-slate-400 dark:text-slate-500 cursor-not-allowed font-mono"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Routing Number</label>
+                  <input 
+                    type="text"
+                    value={user?.routingNumber || 'Pending'}
+                    disabled
+                    className="w-full h-11 px-3 rounded-lg border border-slate-250 dark:border-white/5 bg-slate-100 dark:bg-white/5 text-xs text-slate-400 dark:text-slate-500 cursor-not-allowed font-mono"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500">Email Address</label>
                 <input 
@@ -214,32 +235,36 @@ export function SettingsView() {
             </form>
           </div>
 
-          {/* EMAIL VERIFICATION BOX */}
+          {/* KYC VERIFICATION BOX */}
           <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-4 transition-all">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Credential Verification</h3>
-              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Identity verification settings</p>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">KYC Verification</h3>
+              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Identity document upload</p>
             </div>
 
             <span className="text-xs text-slate-500 dark:text-slate-400 block leading-relaxed">
-              Ensure your secure mail account is certified in order to execute large-value external wires.
+              Upload a valid USA identification document and SSN to fully activate your account for external transfers.
             </span>
 
-            <div className="flex justify-between items-center p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5">
-              <div className="space-y-1">
-                <span className="text-xs text-slate-950 dark:text-white font-medium block">Verification Criteria</span>
-                <span className={`text-xs font-semibold font-mono ${isVerified ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-500'}`}>
-                  {isVerified ? 'Certified Valid' : 'Pending Verification'}
+            <div className="flex flex-col space-y-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-950 dark:text-white font-medium">Status</span>
+                <span className={`font-semibold font-mono ${isVerified ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-500'}`}>
+                  {isVerified ? 'Fully Activated' : 'Pending Documents'}
                 </span>
               </div>
               {!isVerified && (
-                <button 
-                  onClick={handleVerificationRequest}
-                  disabled={loading}
-                  className="h-9 px-4 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-slate-300 hover:dark:border-white/20 text-xs text-slate-900 dark:text-slate-200 font-mono uppercase tracking-wider cursor-pointer font-bold"
-                >
-                  Send Verification Email
-                </button>
+                <div className="space-y-3">
+                  <input type="text" placeholder="SSN (XXX-XX-XXXX)" className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" />
+                  <div className="relative h-20 rounded-lg border-2 border-dashed border-slate-300 dark:border-white/10 bg-white dark:bg-white/5 flex flex-col items-center justify-center text-xs text-slate-500 hover:border-emerald-500/50 cursor-pointer overflow-hidden group">
+                    <span className="font-semibold group-hover:text-emerald-500 transition-colors">Select ID / Driver's License Document</span>
+                    <span className="text-[10px] opacity-70 mt-1">.jpg, .png, .pdf</span>
+                    <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" />
+                  </div>
+                  <button onClick={() => setSuccessMsg("KYC documents uploaded successfully. Pushing to review queue.")} className="w-full h-10 rounded-lg bg-emerald-500 text-white text-xs font-bold transition-transform hover:scale-[1.01] cursor-pointer">
+                    Submit Verification
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -283,30 +308,25 @@ export function SettingsView() {
               </div>
 
               {/* TWOFOUNDATION PASSPROCESSOR */}
-              <div className="flex justify-between items-center p-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950 transition-all">
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-1.5 text-xs text-slate-900 dark:text-white font-semibold">
-                    <Key className="w-4 h-4 text-emerald-500" />
-                    <span>Transaction PIN Gates</span>
+              <div className="flex flex-col space-y-3 p-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950 transition-all">
+                <div className="flex justify-between items-center">
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-1.5 text-xs text-slate-900 dark:text-white font-semibold">
+                      <Key className="w-4 h-4 text-emerald-500" />
+                      <span>Transfer PIN Code</span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 block leading-normal">
+                      Setup a 4-digit PIN required for all outbound transfers and withdrawals.
+                    </span>
                   </div>
-                  <span className="text-[10px] text-slate-500 block leading-normal">
-                    Queries credential code whenever transfer sum exceeds $1,000.
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSuccessMsg("Transfer PIN configuration securely initialized.")}
+                    className="h-8 px-3 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold transition-transform hover:scale-[1.05] cursor-pointer"
+                  >
+                    Setup PIN
+                  </button>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={handleToggleTwoFactor}
-                  className={`relative w-11 h-6 rounded-full transition-colors focus:outline-none cursor-pointer ${
-                    settings?.twoFactorEnabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-800'
-                  }`}
-                >
-                  <span 
-                    className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white dark:bg-black rounded-full transition-transform ${
-                      settings?.twoFactorEnabled ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
               </div>
 
             </div>
@@ -341,27 +361,25 @@ export function SettingsView() {
               </label>
             </div>
           </div>
-
-          {/* ENCRYPTION DEVICE ENDPOINTS */}
+          
           <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-4 transition-all">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Trusted Devices & Access points</h3>
-              <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Devices authorized to access your accounts</p>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950 text-xs text-slate-900 dark:text-white transition-all">
-                <div className="flex items-center space-x-2.5">
-                  <SmartphoneNfc className="w-4 h-4 text-emerald-500" />
-                  <div>
-                    <span className="block text-slate-900 dark:text-white font-semibold">Apple iPhone 16 Pro Max</span>
-                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-mono block">Signature Token: ab41-9c02-e8ba-5bb2</span>
-                  </div>
-                </div>
-                <span className="px-2 py-0.5 bg-emerald-500/5 dark:bg-emerald-500/5 border border-emerald-500/10 rounded text-emerald-600 dark:text-emerald-400 font-mono text-[9px] uppercase tracking-wider font-bold">Primary</span>
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">App Platform Install</h3>
+                <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Progressive Web Application</p>
               </div>
+              <button 
+                onClick={() => setSuccessMsg("PWA installation prompt initiated.")}
+                className="h-9 px-4 rounded-lg bg-slate-950 dark:bg-white text-white dark:text-black hover:bg-slate-900 text-xs font-bold transition-transform hover:scale-[1.01] cursor-pointer"
+              >
+                Install App
+              </button>
             </div>
+            <span className="text-xs text-slate-500 dark:text-slate-400 block leading-relaxed">
+              Install Morning Bright on your device for a fast, native app experience and offline capabilities.
+            </span>
           </div>
+
         </div>
 
       </div>

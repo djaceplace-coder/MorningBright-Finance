@@ -24,11 +24,12 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 
 export function TransfersView() {
-  const { balance, transactions, issueTransfer, loading, errorMessage, clearError, beneficiaries } = useStore();
+  const { user, balance, transactions, issueTransfer, loading, errorMessage, clearError, beneficiaries } = useStore();
   const [recipientEmail, setRecipientEmail] = useState('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('wire');
+  const [bank, setBank] = useState('internal');
   
   // Search and tabs state
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,6 +37,7 @@ export function TransfersView() {
 
   // Success display states
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showKycModal, setShowKycModal] = useState(false);
 
   const totalChecking = balance?.checking || 0;
 
@@ -56,6 +58,11 @@ export function TransfersView() {
 
     if (val > totalChecking) {
       useStore.setState({ errorMessage: "Insufficient liquidity available in your checkings account." });
+      return;
+    }
+
+    if (user && !user.isVerified) {
+      setShowKycModal(true);
       return;
     }
 
@@ -121,6 +128,35 @@ export function TransfersView() {
             )}
 
             <form onSubmit={handleSendMoney} className="space-y-4 text-slate-950 dark:text-white">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Receiving Institution</label>
+                <select 
+                  value={bank}
+                  onChange={(e) => setBank(e.target.value)}
+                  className="w-full h-11 px-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                >
+                  <option value="internal">Morning Bright (Internal)</option>
+                  <optgroup label="United States">
+                    <option value="chase">JPMorgan Chase</option>
+                    <option value="bofa">Bank of America</option>
+                    <option value="wells">Wells Fargo</option>
+                    <option value="citi">Citibank</option>
+                  </optgroup>
+                  <optgroup label="United Kingdom">
+                    <option value="barclays">Barclays</option>
+                    <option value="hsbc">HSBC</option>
+                    <option value="natwest">NatWest</option>
+                    <option value="monzo">Monzo</option>
+                  </optgroup>
+                  <optgroup label="Europe">
+                    <option value="bnp">BNP Paribas</option>
+                    <option value="db">Deutsche Bank</option>
+                    <option value="revolut">Revolut</option>
+                    <option value="n26">N26</option>
+                  </optgroup>
+                </select>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Recipient Account Address</label>
                 <div className="relative">
@@ -301,6 +337,57 @@ export function TransfersView() {
 
       </div>
 
+      <AnimatePresence>
+        {showKycModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              onClick={() => setShowKycModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-xl"
+            >
+              <div className="w-12 h-12 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mb-4">
+                <AlertCircle size={24} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Action Required</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                Your account is currently in provisional mode. To enable external transfers, please complete the Know Your Customer (KYC) identity verification process.
+              </p>
+              
+              <div className="mt-6 space-y-2">
+                <div className="flex items-start space-x-3 text-xs text-slate-700 dark:text-slate-300">
+                  <span className="w-4 h-4 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center font-mono mt-0.5 shrink-0">1</span>
+                  <span>Navigate to Profile Settings.</span>
+                </div>
+                <div className="flex items-start space-x-3 text-xs text-slate-700 dark:text-slate-300">
+                  <span className="w-4 h-4 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center font-mono mt-0.5 shrink-0">2</span>
+                  <span>Upload your SSN and a valid identity document (ID or Passport).</span>
+                </div>
+                <div className="flex items-start space-x-3 text-xs text-slate-700 dark:text-slate-300">
+                  <span className="w-4 h-4 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center font-mono mt-0.5 shrink-0">3</span>
+                  <span>Wait for secure verification of your identity (typically within a few minutes).</span>
+                </div>
+              </div>
+
+              <div className="mt-8 flex space-x-3">
+                <button 
+                  onClick={() => setShowKycModal(false)}
+                  className="w-full h-11 rounded-lg bg-emerald-500 text-white text-xs font-bold transition-transform hover:scale-[1.01]"
+                >
+                  Understood
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
