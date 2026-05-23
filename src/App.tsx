@@ -16,6 +16,7 @@ import { TransfersView } from './components/TransfersView';
 import { BillsView } from './components/BillsView';
 import { SavingsView } from './components/SavingsView';
 import { SettingsView } from './components/SettingsView';
+import { AdminPanel } from './components/AdminPanel';
 import { 
   LogOut, 
   Menu, 
@@ -166,11 +167,30 @@ export default function App() {
 
   // RENDER LANDING PAGE OR PRIVATE DASHBOARD
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300 flex flex-col">
+      {!isPWA && (
+        <div className="bg-emerald-600 text-white px-4 py-2 flex items-center justify-between z-50 shadow-sm relative">
+          <div className="flex items-center space-x-3">
+            <div className="w-6 h-6 bg-white/20 rounded flex items-center justify-center shrink-0">
+              <Download size={14} />
+            </div>
+            <div>
+              <p className="text-xs font-bold leading-tight">Install Morning Bright App</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => window.installPWA?.()}
+            className="px-3 py-1 bg-white text-emerald-600 rounded-md text-xs font-bold hover:bg-slate-100 transition-colors"
+          >
+            Install
+          </button>
+        </div>
+      )}
       
+      <div className="flex-1 flex flex-col relative w-full h-full">
       {!user ? (
         // PUBLIC FACING SITE
-        <>
+        <div className="flex flex-col flex-1">
           <LandingPage 
             onEnterApp={handleOpenAuth} 
             onSignUp={handleOpenSignUp}
@@ -185,10 +205,10 @@ export default function App() {
               />
             )}
           </AnimatePresence>
-        </>
+        </div>
       ) : (
         // PRIVATE DASHBOARD CLIENT PORTAL
-        <div className={`flex min-h-screen relative overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors ${isPWA ? 'max-w-[480px] mx-auto border-x border-slate-200 dark:border-white/5 shadow-2xl' : ''}`}>
+        <div className={`flex flex-1 w-full relative overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors ${isPWA ? 'max-w-[480px] mx-auto border-x border-slate-200 dark:border-white/5 shadow-2xl z-0' : 'z-0'}`}>
           
           {/* DESKTOP SIDEBAR */}
           <div className={isPWA ? "hidden" : "hidden md:block"}>
@@ -284,6 +304,7 @@ export default function App() {
                   {currentTab === 'cards' && <CardsView />}
                   {currentTab === 'savings' && <SavingsView />}
                   {currentTab === 'settings' && <SettingsView />}
+                  {currentTab === 'admin' && <AdminPanel />}
                 </motion.div>
               </AnimatePresence>
             </main>
@@ -295,6 +316,8 @@ export default function App() {
 
         </div>
       )}
+
+      </div>
 
       {/* PWA INSTALL MODAL */}
       <AnimatePresence>

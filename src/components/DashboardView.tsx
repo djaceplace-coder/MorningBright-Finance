@@ -39,10 +39,6 @@ interface DashboardViewProps {
 export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewProps) {
   const { user, balance, transactions, notifications, addFunds } = useStore();
   const [hideBalances, setHideBalances] = useState(false);
-  const [fundingAmount, setFundingAmount] = useState('500');
-  const [fundingTarget, setFundingTarget] = useState<'checking' | 'savings'>('checking');
-  const [fundingModalOpen, setFundingModalOpen] = useState(false);
-
   // AI Insights State
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -125,14 +121,6 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
             title="Toggle Account Balances Visibility"
           >
             {hideBalances ? <EyeOff size={15} /> : <Eye size={15} />}
-          </button>
-          
-          <button 
-            onClick={() => setFundingModalOpen(true)}
-            className="h-10 px-4 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-black font-semibold text-xs flex items-center space-x-1.5 hover:scale-105 active:scale-95 transition-transform cursor-pointer"
-          >
-            <Plus size={14} />
-            <span>Deposit External Wire</span>
           </button>
         </div>
       </div>
@@ -408,40 +396,6 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
           )}
         </div>
       </div>
-
-      {/* FUNDING DEPOSIT MODAL */}
-      {fundingModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Add Funds</h3>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                To initiate a deposit via Mobile Cheque, Direct Deposit, Bitcoin, or other Cryptocurrency, please contact our Support AI System.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 space-y-2">
-              <span className="block text-[10px] text-slate-400 font-mono uppercase tracking-widest font-bold">Priority Support Line</span>
-              <a href="tel:+18005550199" className="text-xl font-mono text-emerald-600 dark:text-emerald-400 font-bold block">
-                +1 (800) 555-0199
-              </a>
-              <span className="block text-[10px] text-slate-500 mt-2">
-                Our AI agent will process your request and connect you to an escalation agent if needed.
-              </span>
-            </div>
-
-            <div className="flex pt-2">
-              <button 
-                onClick={() => setFundingModalOpen(false)}
-                className="w-full h-11 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 border border-slate-200 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

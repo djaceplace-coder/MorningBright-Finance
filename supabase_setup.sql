@@ -6,6 +6,16 @@
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
+-- Clean up existing incorrect schema before recreating
+drop table if exists public.admin_logs cascade;
+drop table if exists public.settings cascade;
+drop table if exists public.notifications cascade;
+drop table if exists public.savings_goals cascade;
+drop table if exists public.cards cascade;
+drop table if exists public.transactions cascade;
+drop table if exists public.balances cascade;
+drop table if exists public.users cascade;
+
 -- 1. Users Table
 create table public.users (
     id uuid references auth.users on delete cascade primary key,
@@ -57,6 +67,12 @@ create policy "Admins can update user states"
         select 1 from public.users where id = auth.uid() and is_admin = true
     ));
 
+create policy "Admins can delete any user" 
+    on public.users for delete 
+    using (exists (
+        select 1 from public.users where id = auth.uid() and is_admin = true
+    ));
+
 
 -- 2. Balances Table
 create table public.balances (
@@ -85,6 +101,12 @@ create policy "Admins can query all balance sheets"
 
 create policy "Admins can update balances" 
     on public.balances for update 
+    using (exists (
+        select 1 from public.users where id = auth.uid() and is_admin = true
+    ));
+
+create policy "Admins can delete balances" 
+    on public.balances for delete 
     using (exists (
         select 1 from public.users where id = auth.uid() and is_admin = true
     ));
@@ -158,7 +180,17 @@ create policy "Admins can insert log adjustments"
         select 1 from public.users where id = auth.uid() and is_admin = true
     ));
 
--- Note: no policies for update or delete are created, executing the Non-Mutability mandate!
+create policy "Admins can update transactions" 
+    on public.transactions for update 
+    using (exists (
+        select 1 from public.users where id = auth.uid() and is_admin = true
+    ));
+
+create policy "Admins can delete transactions" 
+    on public.transactions for delete 
+    using (exists (
+        select 1 from public.users where id = auth.uid() and is_admin = true
+    ));
 
 
 -- 4. Virtual Cards Table
@@ -357,7 +389,7 @@ begin
   );
 
   insert into public.balances (uid, checking, savings)
-  values (new.id, 500.00, 0.00);
+  values (new.id, 0.00, 0.00);
 
   insert into public.settings (uid, push_notifications, email_statements, theme)
   values (new.id, true, true, 'light');

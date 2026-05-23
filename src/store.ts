@@ -53,18 +53,7 @@ const randomDate = () => {
 };
 
 // Initial interactive assets for onboarding environment
-const INITIAL_TRANSACTIONS = (userId: string): BankTransaction[] => [
-  {
-    id: crypto.randomUUID(),
-    userId,
-    amount: 500,
-    type: TransactionType.DEPOSIT,
-    status: TransactionStatus.COMPLETED,
-    merchant: "Opening Deposit",
-    category: "Funding",
-    createdAt: new Date().toISOString(), // Fixed timestamp -> createdAt
-  },
-];
+const INITIAL_TRANSACTIONS = (userId: string): BankTransaction[] => [];
 const INITIAL_CARDS = (userId: string, name: string): VirtualCard[] => [
   {
     id: crypto.randomUUID(),
@@ -329,7 +318,7 @@ export const useStore = create<BankState>((set, get) => {
 
         const balance: UserBalance = {
           uid: data.user.id,
-          checking: 500.0,
+          checking: 0.0,
           savings: 0.0,
           updatedAt: new Date().toISOString(),
         };
@@ -535,7 +524,7 @@ export const useStore = create<BankState>((set, get) => {
 
             const balance: UserBalance = {
               uid: authData.user.id,
-              checking: 500.0,
+              checking: 0.0,
               savings: 0.0,
               updatedAt: new Date().toISOString(),
             };

@@ -11,36 +11,14 @@ interface LogoProps {
 }
 
 export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps) {
-  const uid = useId();
-  const silverId = `silverGradient-${uid.replace(/:/g, '')}`;
-  const blueId = `blueGradient-${uid.replace(/:/g, '')}`;
-
   return (
     <div className={`shrink-0 transition-transform hover:scale-105 select-none ${className}`}>
       <svg
         viewBox="0 0 100 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full"
+        className="w-full h-full text-emerald-600 dark:text-emerald-400"
       >
-        <defs>
-          {/* Silver/Platinum gradient for the rising sun emblem */}
-          <linearGradient id={silverId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="35%" stopColor="#cbd5e1" />
-            <stop offset="50%" stopColor="#e2e8f0" />
-            <stop offset="65%" stopColor="#94a3b8" />
-            <stop offset="100%" stopColor="#cbd5e1" />
-          </linearGradient>
-
-          {/* Deep premium digital banking blue/midnight gradient */}
-          <linearGradient id={blueId} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#0d2551" />
-            <stop offset="30%" stopColor="#0a1d40" />
-            <stop offset="100%" stopColor="#03081a" />
-          </linearGradient>
-        </defs>
-
         {withBackground && (
           <rect
             x="4"
@@ -48,9 +26,8 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
             width="92"
             height="92"
             rx="24"
-            fill={`url(#${blueId})`}
-            stroke="rgba(255,255,255,0.06)"
-            strokeWidth="1"
+            fill="currentColor"
+            className="opacity-10 dark:opacity-20"
           />
         )}
 
@@ -62,7 +39,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
             y1="63"
             x2="78"
             y2="63"
-            stroke={`url(#${silverId})`}
+            stroke="currentColor"
             strokeWidth="3.2"
             strokeLinecap="round"
           />
@@ -70,7 +47,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
           {/* Center Sun Semi-Circle */}
           <path
             d="M 37 63 A 13 13 0 0 1 63 63 Z"
-            fill={`url(#${silverId})`}
+            fill="currentColor"
           />
 
           {/* Vertical Center Ray */}
@@ -79,7 +56,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
             y1="45"
             x2="50"
             y2="30"
-            stroke={`url(#${silverId})`}
+            stroke="currentColor"
             strokeWidth="3"
             strokeLinecap="round"
           />
@@ -90,7 +67,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
             y1="48"
             x2="33"
             y2="34"
-            stroke={`url(#${silverId})`}
+            stroke="currentColor"
             strokeWidth="3"
             strokeLinecap="round"
           />
@@ -101,7 +78,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
             y1="48"
             x2="67"
             y2="34"
-            stroke={`url(#${silverId})`}
+            stroke="currentColor"
             strokeWidth="3"
             strokeLinecap="round"
           />
@@ -112,7 +89,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
             y1="54"
             x2="25"
             y2="47"
-            stroke={`url(#${silverId})`}
+            stroke="currentColor"
             strokeWidth="3"
             strokeLinecap="round"
           />
@@ -123,7 +100,7 @@ export function Logo({ className = "w-9 h-9", withBackground = true }: LogoProps
             y1="54"
             x2="75"
             y2="47"
-            stroke={`url(#${silverId})`}
+            stroke="currentColor"
             strokeWidth="3"
             strokeLinecap="round"
           />

@@ -40,6 +40,10 @@ export function Sidebar({ currentTab, onChangeTab }: SidebarProps) {
     { id: 'settings', label: 'Settings', icon: <Settings size={18} /> },
   ];
 
+  if (user?.isAdmin) {
+    menuItems.push({ id: 'admin', label: 'Admin Panel', icon: <ShieldAlert size={18} /> });
+  }
+
   return (
     <aside className="w-64 bg-slate-100 dark:bg-slate-950 border-r border-slate-200 dark:border-white/5 flex flex-col justify-between py-6 px-4 shrink-0 font-sans select-none hidden md:flex sticky top-0 h-screen transition-colors">
       

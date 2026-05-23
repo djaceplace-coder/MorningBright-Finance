@@ -5,8 +5,9 @@
 
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { X, Mail, Lock, User, Check, Eye, EyeOff, AlertCircle, Fingerprint, Sparkles } from 'lucide-react';
+import { X, Mail, Lock, User, Check, Eye, EyeOff, AlertCircle, Fingerprint, Sparkles, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Logo } from './Logo';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -87,14 +88,20 @@ export function AuthModal({ isOpen, onClose, onSuccess, initialIsSignUp = false 
       >
         {/* Glow corner decoration */}
         <div className="absolute -top-12 -right-12 w-28 h-28 bg-emerald-500/10 blur-xl rounded-full" />
+        <div className="absolute top-4 right-4 flex items-center space-x-1 border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 rounded-full text-[9px] font-bold text-emerald-400">
+          <ShieldCheck size={10} />
+          <span>FDIC INSURED</span>
+        </div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-start mt-2">
           <div>
-            <h3 className="text-xl font-medium tracking-tight text-white font-sans">
-              {isSignUp ? 'Create Account' : 'Secure Login'}
+            <Logo withBackground={false} className="w-8 h-8 text-emerald-500 mb-4" />
+            <h3 className="text-xl font-bold tracking-tight text-white font-sans">
+              {isSignUp ? 'Open Account' : 'Secure Login'}
             </h3>
-            <p className="text-xs text-slate-400 mt-1">
-              Morning Bright Digital Banking
+            <p className="text-xs text-slate-400 mt-1 flex items-center space-x-1">
+              <Lock size={10} className="text-slate-500" />
+              <span>TLS 256-bit encryption active</span>
             </p>
           </div>
           <button 

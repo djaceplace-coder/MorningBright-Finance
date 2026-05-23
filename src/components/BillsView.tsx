@@ -9,7 +9,7 @@ import { Receipt, Plus, Search, ChevronRight, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function BillsView() {
-  const { user, balance, issueTransfer } = useStore();
+  const { user, issueTransfer } = useStore();
   const [search, setSearch] = useState('');
   const [selectedBill, setSelectedBill] = useState<any>(null);
 
@@ -22,25 +22,41 @@ export function BillsView() {
     { id: '6', name: 'Chase Credit Card', type: 'credit card', amount: 450.00, dueDate: '2026-06-12' },
     { id: '7', name: 'Planet Fitness', type: 'membership', amount: 24.99, dueDate: '2026-06-15' },
     { id: '8', name: 'State Farm Home', type: 'insurance', amount: 135.00, dueDate: '2026-06-20' },
+    { id: '9', name: 'Con Edison Utility', type: 'utility', amount: 112.50, dueDate: '2026-06-22' },
+    { id: '10', name: 'Verizon Fios', type: 'telecom', amount: 79.99, dueDate: '2026-06-25' },
+    { id: '11', name: 'Spotify Premium', type: 'subscription', amount: 10.99, dueDate: '2026-06-28' },
+    { id: '12', name: 'Amazon Prime', type: 'subscription', amount: 14.99, dueDate: '2026-07-02' },
+    { id: '13', name: 'American Express', type: 'credit card', amount: 320.00, dueDate: '2026-07-05' },
+    { id: '14', name: 'Health Net Premium', type: 'insurance', amount: 180.00, dueDate: '2026-07-08' },
+    { id: '15', name: 'Hulu + Live TV', type: 'subscription', amount: 69.99, dueDate: '2026-07-10' },
+    { id: '16', name: 'Adobe Creative Cloud', type: 'subscription', amount: 54.99, dueDate: '2026-07-12' },
+    { id: '17', name: 'Equinox Gym', type: 'membership', amount: 200.00, dueDate: '2026-07-15' },
+    { id: '18', name: 'Apple One', type: 'subscription', amount: 32.95, dueDate: '2026-07-18' },
+    { id: '19', name: 'T-Mobile Postpaid', type: 'telecom', amount: 110.00, dueDate: '2026-07-20' },
+    { id: '20', name: 'Progressive Auto', type: 'insurance', amount: 125.50, dueDate: '2026-07-22' },
   ];
 
   const payBill = async () => {
     if (!selectedBill) return;
-    await issueTransfer(selectedBill.name.replace(/\s+/g, '').toLowerCase() + '@biller.net', selectedBill.amount, `Payment for ${selectedBill.name}`);
+    await issueTransfer(
+      selectedBill.name.replace(/\s+/g, '').toLowerCase() + '@biller.net',
+      selectedBill.amount,
+      `Payment for ${selectedBill.name}`
+    );
     setSelectedBill(null);
   };
 
   const filteredBills = predefinedBills.filter(b => b.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar bg-slate-50 dark:bg-slate-950 transition-colors">
       <div className="max-w-4xl mx-auto space-y-6">
         
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">Scheduled Allocations</span>
             <h1 className="text-2xl font-medium tracking-tight text-slate-900 dark:text-white mt-1">Hi, {user?.lastName || 'Client'} - Bill Payments</h1>
-            <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">Manage and pay your automated billers.</p>
+            <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">Manage and pay your automated billers across subscription categories.</p>
           </div>
           <div className="flex items-center space-x-3">
             <button className="h-10 px-4 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600 transition-colors flex items-center space-x-2">
