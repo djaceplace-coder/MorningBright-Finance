@@ -38,7 +38,7 @@ import {
   TransactionType,
   TransactionStatus,
   Beneficiary,
-} from "./types";
+} from "./components/types";
 
 // Helper to generate random 16 digit card
 const randomCard = () =>
@@ -83,6 +83,18 @@ const INITIAL_NOTIFICATIONS = (userId: string): BankNotification[] => [
   },
 ];
 
+// Support Ticket mappings
+const mapTicketFromDb = (db: any): SupportTicket => ({
+  id: db.id,
+  userId: db.user_id,
+  subject: db.subject,
+  description: db.description,
+  status: db.status,
+  category: db.category,
+  documentBase64: db.document_base64,
+  createdAt: db.created_at,
+});
+
 interface BankState {
   // Current user state
   user: UserProfile | null;
@@ -91,8 +103,10 @@ interface BankState {
   cards: VirtualCard[];
   savings: SavingsGoal[];
   notifications: BankNotification[];
+  tickets: SupportTicket[];
   settings: UserSecuritySettings | null;
   adminLogs: AdminLog[];
+  adminTickets: SupportTicket[];
   usersList: UserProfile[]; // Cache for Admin console views
   beneficiaries: Beneficiary[];
 
@@ -186,6 +200,13 @@ interface BankState {
     message: string,
     type: "info" | "alert" | "success" | "system",
   ) => Promise<void>;
+  // Support Tickets
+  loadTickets: () => Promise<void>;
+  createTicket: (subject: string, description: string, category: string, documentBase64?: string) => Promise<void>;
+  
+  // Admin Support Tickets
+  adminLoadTickets: () => Promise<void>;
+  adminUpdateTicketStatus: (ticketId: string, status: "open" | "in_progress" | "resolved") => Promise<void>;
   adminLoadLogs: () => Promise<void>;
 }
 
@@ -199,8 +220,10 @@ export const useStore = create<BankState>((set, get) => {
     cards: [],
     savings: [],
     notifications: [],
+    tickets: [],
     settings: null,
     adminLogs: [],
+    adminTickets: [],
     usersList: [],
     beneficiaries: [],
 
@@ -1544,6 +1567,72 @@ export const useStore = create<BankState>((set, get) => {
         await supabase.from("admin_logs").insert(mapLogToDb(log));
       } catch (e) {
         console.error("Failed to broadcast notification", e);
+      }
+    },
+
+    loadTickets: async () => {
+      const { user } = get();
+      if (!user) return;
+      try {
+        const { data, error } = await supabase.from('support_tickets').select('*').eq('user_id', user.uid).order('created_at', { ascending: false });
+        if (error) throw error;
+        if (data) {
+          set({ tickets: data.map(mapTicketFromDb) });
+        }
+      } catch (e) {
+        console.error('Failed to load tickets', e);
+      }
+    },
+    
+    createTicket: async (subject, description, category, documentBase64) => {
+      const { user } = get();
+      if (!user) return;
+      try {
+        const payload = {
+          user_id: user.uid,
+          subject,
+          description,
+          category,
+          document_base64: documentBase64 || null,
+          status: 'open',
+          created_at: new Date().toISOString()
+        };
+        const { error } = await supabase.from('support_tickets').insert(payload);
+        if (error) throw error;
+        await get().loadTickets();
+      } catch (e) {
+        console.error('Failed to create ticket', e);
+      }
+    },
+
+    adminLoadTickets: async () => {
+      try {
+        const { data, error } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        if (data) set({ adminTickets: data.map(mapTicketFromDb) });
+      } catch (e) {
+        console.error('Failed to load admin tickets', e);
+      }
+    },
+
+    adminUpdateTicketStatus: async (ticketId, status) => {
+      try {
+        const { error } = await supabase.from('support_tickets').update({ status }).eq('id', ticketId);
+        if (error) throw error;
+        await get().adminLoadTickets();
+        const logId = "log_" + Math.random().toString(36).substring(2, 10);
+        const log: AdminLog = {
+          id: logId,
+          adminId: get().user?.uid || "admin_caller",
+          adminEmail: get().user?.email || "sys@admin",
+          action: "TICKET_UPDATE",
+          targetUserId: "system_ticket",
+          details: `Updated ticket ${ticketId} to status ${status}`,
+          timestamp: new Date().toISOString(),
+        };
+        await supabase.from("admin_logs").insert(mapLogToDb(log));
+      } catch (e) {
+        console.error('Failed to update ticket', e);
       }
     },
 

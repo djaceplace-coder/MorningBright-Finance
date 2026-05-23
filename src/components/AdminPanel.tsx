@@ -17,15 +17,18 @@ import {
   Globe,
   Plus
 } from 'lucide-react';
-import { TransactionType } from '../types';
+import { TransactionType } from './types';
 
 export function AdminPanel() {
   const { 
     user, 
     usersList,
     adminLogs, 
+    adminTickets,
     adminLoadUsers,
     adminLoadLogs,
+    adminLoadTickets,
+    adminUpdateTicketStatus,
     adminEditBalance, 
     adminAddSystemTransaction, 
     adminPushSystemNotification, 
@@ -58,6 +61,7 @@ export function AdminPanel() {
   useEffect(() => {
     adminLoadUsers();
     adminLoadLogs();
+    adminLoadTickets();
   }, []);
 
   // Sync selected user when list changes
@@ -306,14 +310,14 @@ export function AdminPanel() {
             </div>
 
             <form onSubmit={handlePushNotification} className="space-y-3">
-              <label className="flex items-center space-x-2 text-xs text-white">
+              <label className="flex items-center space-x-2 text-[10px] uppercase tracking-wider font-mono text-slate-400 mb-2 cursor-pointer">
                  <input 
                    type="checkbox" 
                    checked={broadcastMode} 
                    onChange={(e) => setBroadcastMode(e.target.checked)} 
-                   className="rounded text-amber-500 bg-white/5 border-white/10"
+                   className="rounded text-amber-500 bg-white/5 border-white/10 cursor-pointer"
                  />
-                 <span>Queue notification locally to ALL users</span>
+                 <span>Queue broadcast to ALL users</span>
               </label>
               
               <input 
@@ -410,6 +414,76 @@ export function AdminPanel() {
           </form>
         </div>
 
+      </div>
+
+      {/* SUPPORT TICKETS AND VERIFICATION QUEUE */}
+      <div className="p-6 rounded-2xl border border-white/5 bg-slate-950/40 space-y-4">
+        <div>
+          <h3 className="text-sm font-medium text-white flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+            <span>Support Tickets & Verification Logs</span>
+          </h3>
+          <p className="text-[10px] text-slate-500 font-mono uppercase mt-0.5">Manage user appeals, uploaded documents, and support queues</p>
+        </div>
+
+        <div className="space-y-3 pt-2 max-h-80 overflow-y-auto pr-1">
+          {adminTickets.length === 0 ? (
+            <div className="py-12 text-center text-xs text-slate-600 font-mono italic border border-dashed border-white/5 rounded-xl">
+              Ticket queue is currently empty.
+            </div>
+          ) : (
+            adminTickets.map(ticket => {
+              const targetProfile = usersList.find(u => u.uid === ticket.userId);
+              return (
+                <div key={ticket.id} className="p-4 rounded-xl border border-white/5 bg-slate-900/50 text-xs flex flex-col md:flex-row gap-4 justify-between">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold text-white">{ticket.subject}</span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold uppercase tracking-wider ${
+                          ticket.status === 'open' ? 'bg-amber-500/10 text-amber-500' :
+                          ticket.status === 'in_progress' ? 'bg-blue-500/10 text-blue-500' :
+                          'bg-emerald-500/10 text-emerald-500'
+                        }`}>
+                        {ticket.status.replace('_', ' ')}
+                      </span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-mono uppercase tracking-wider bg-white/5 text-slate-400">
+                        {ticket.category.replace('_', ' ')}
+                      </span>
+                    </div>
+                    <p className="text-slate-400 leading-relaxed max-w-2xl">{ticket.description}</p>
+                    
+                    {ticket.documentBase64 && (
+                      <div className="mt-2 text-[10px] flex items-center space-x-2 text-indigo-400 bg-indigo-500/10 w-max px-2 py-1 rounded">
+                        <span>📎 Document Attached Reference</span>
+                      </div>
+                    )}
+                    
+                    <div className="text-[10px] font-mono text-slate-500">
+                      User: {targetProfile?.email || ticket.userId} • {new Date(ticket.createdAt).toLocaleString()}
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col space-y-2 justify-center border-t border-white/5 pt-3 md:border-t-0 md:pt-0 md:border-l pl-o md:pl-4">
+                    <button 
+                      onClick={() => adminUpdateTicketStatus(ticket.id, 'in_progress')}
+                      disabled={ticket.status === 'in_progress'}
+                      className="px-3 py-1.5 rounded bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[10px] font-bold uppercase transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      Mark Progress
+                    </button>
+                    <button 
+                      onClick={() => adminUpdateTicketStatus(ticket.id, 'resolved')}
+                      disabled={ticket.status === 'resolved'}
+                      className="px-3 py-1.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      Resolve Case
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* ENTIRE HISTORIC AUDIT TRAILS LOGS */}

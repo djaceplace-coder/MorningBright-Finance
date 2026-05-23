@@ -4,20 +4,21 @@
  */
 
 import React, { useState } from 'react';
-import { useStore } from './store';
-import { LandingPage } from './components/LandingPage';
-import { AuthModal } from './components/AuthModal';
-import { Sidebar } from './components/Sidebar';
-import { Logo } from './components/Logo';
-import { MobileNav } from './components/MobileNav';
-import { NotificationBell } from './components/NotificationBell';
-import { DashboardView } from './components/DashboardView';
-import { CardsView } from './components/CardsView';
-import { TransfersView } from './components/TransfersView';
-import { BillsView } from './components/BillsView';
-import { SavingsView } from './components/SavingsView';
-import { SettingsView } from './components/SettingsView';
-import { AdminPanel } from './components/AdminPanel';
+import { useStore } from '../store';
+import { LandingPage } from './LandingPage';
+import { AuthModal } from './AuthModal';
+import { Sidebar } from './Sidebar';
+import { Logo } from './Logo';
+import { MobileNav } from './MobileNav';
+import { NotificationBell } from './NotificationBell';
+import { DashboardView } from './DashboardView';
+import { CardsView } from './CardsView';
+import { TransfersView } from './TransfersView';
+import { BillsView } from './BillsView';
+import { SavingsView } from './SavingsView';
+import { SettingsView } from './SettingsView';
+import { SupportView } from './SupportView';
+import { AdminPanel } from './AdminPanel';
 import { 
   LogOut, 
   Menu, 
@@ -305,6 +306,7 @@ export default function App() {
                   {currentTab === 'bills' && <BillsView />}
                   {currentTab === 'cards' && <CardsView />}
                   {currentTab === 'savings' && <SavingsView />}
+                  {currentTab === 'support' && <SupportView />}
                   {currentTab === 'settings' && <SettingsView />}
                   {currentTab === 'admin' && <AdminPanel />}
                 </motion.div>

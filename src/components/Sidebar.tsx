@@ -39,6 +39,7 @@ export function Sidebar({ currentTab, onChangeTab }: SidebarProps) {
     { id: 'bills', label: 'Bill Payments', icon: <Sparkles size={18} /> },
     { id: 'cards', label: 'Cards', icon: <CreditCard size={18} /> },
     { id: 'savings', label: 'Savings', icon: <Target size={18} /> },
+    { id: 'support', label: 'Support', icon: <ShieldAlert size={18} /> },
     { id: 'settings', label: 'Settings', icon: <Settings size={18} /> },
   ];
 

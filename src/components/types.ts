@@ -110,6 +110,17 @@ export interface AdminLog {
   timestamp: string;
 }
 
+export interface SupportTicket {
+  id: string;
+  userId: string;
+  subject: string;
+  description: string;
+  status: 'open' | 'in_progress' | 'resolved';
+  category: string;
+  documentBase64?: string | null;
+  createdAt: string;
+}
+
 export interface Beneficiary {
   id: string;
   userId: string;
