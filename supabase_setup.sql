@@ -334,6 +334,44 @@ create policy "Admins can chronicle events"
 
 -- Note: no updates or deletes permitted on audit logs to preserve institutional data forensics!
 
+-- 9. Automatic User Provisioning Trigger
+create or replace function public.handle_new_user()
+returns trigger as $$
+declare
+  account_num text;
+begin
+  -- Generate a random 10-digit account number starting with 1
+  account_num := floor(1000000000 + random() * 9000000000)::text;
+
+  insert into public.users (id, first_name, last_name, email, account_number, routing_number, is_verified, is_admin, created_at)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'firstName', 'Valued'),
+    coalesce(new.raw_user_meta_data->>'lastName', 'Client'),
+    new.email,
+    account_num,
+    '122105155',
+    false,
+    case when new.email = 'support@morningbrightfinance.com' then true else false end,
+    now()
+  );
+
+  insert into public.balances (uid, checking, savings)
+  values (new.id, 500.00, 0.00);
+
+  insert into public.settings (uid, push_notifications, email_statements, theme)
+  values (new.id, true, true, 'light');
+
+  return new;
+end;
+$$ language plpgsql security definer;
+
+-- Trigger the function every time a user is created
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+
 -- Setup Realtime
 drop publication if exists supabase_realtime;
 create publication supabase_realtime;
