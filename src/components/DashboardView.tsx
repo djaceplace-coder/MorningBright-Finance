@@ -21,9 +21,10 @@ import {
   PiggyBank,
   Settings
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
-  AreaChart, 
-  Area, 
+  AreaChart,
+  Area,
   XAxis, 
   YAxis, 
   Tooltip, 
@@ -39,6 +40,12 @@ interface DashboardViewProps {
 export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewProps) {
   const { user, balance, transactions, notifications, addFunds } = useStore();
   const [hideBalances, setHideBalances] = useState(false);
+  const [showKYC, setShowKYC] = useState(false);
+  const [kycSSN, setKycSSN] = useState('');
+  const [kycDocType, setKycDocType] = useState('driver_license');
+  const [kycDocFile, setKycDocFile] = useState<File | null>(null);
+  const [kycSubmitted, setKycSubmitted] = useState(false);
+
   // AI Insights State
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -102,6 +109,13 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
     }
   };
 
+  const handleSubmitKYC = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (kycSSN.replace(/\D/g, '').length !== 9 || !kycDocFile) return;
+    setKycSubmitted(true);
+    setShowKYC(false);
+  };
+
   return (
     <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-6 md:p-8 font-sans space-y-6 select-none pb-24 transition-colors duration-300">
       
@@ -124,6 +138,60 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
           </button>
         </div>
       </div>
+
+      {!user?.isVerified && !user?.isAdmin && (
+        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+           <div>
+             <h3 className="text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-2">
+               <span>Complete your KYC Profile</span>
+               <span className="px-2 py-0.5 rounded pl-1 bg-emerald-500/20 text-xs font-mono uppercase">$500 Bonus pending</span>
+             </h3>
+             <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">To unlock your checking account's full features and claim your welcome bonus, please provide identity verification details.</p>
+           </div>
+           {kycSubmitted ? (
+             <div className="px-4 py-2 bg-emerald-500 rounded-lg text-white font-bold text-sm bg-opacity-50">
+               Under Review by Admin
+             </div>
+           ) : (
+             <button onClick={() => setShowKYC(true)} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shrink-0 whitespace-nowrap transition-colors">
+                Start Registration
+             </button>
+           )}
+        </div>
+      )}
+
+      <AnimatePresence>
+        {showKYC && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowKYC(false)} />
+            <motion.div initial={{scale:0.95, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0.95, opacity:0}} className="relative w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-xl z-10">
+              <h2 className="text-xl font-bold dark:text-white mb-2">Identity Details (KYC)</h2>
+              <p className="text-xs text-slate-500 mb-6">Federal regulations require identity verification before full activation.</p>
+              
+              <form onSubmit={handleSubmitKYC} className="space-y-4">
+                 <div>
+                   <label className="text-[10px] font-mono tracking-widest uppercase font-bold text-slate-500">Social Security Number (SSN)</label>
+                   <input type="text" placeholder="XXX-XX-XXXX" value={kycSSN} onChange={e => setKycSSN(e.target.value)} required pattern="\d{3}-?\d{2}-?\d{4}" className="w-full h-11 px-3 mt-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:border-emerald-500 dark:text-white" />
+                   <p className="text-[10px] text-slate-400 mt-1">Must be 9 digits.</p>
+                 </div>
+                 <div>
+                   <label className="text-[10px] font-mono tracking-widest uppercase font-bold text-slate-500">Form of Identity</label>
+                   <select value={kycDocType} onChange={e => setKycDocType(e.target.value)} className="w-full h-11 px-3 mt-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:border-emerald-500 dark:text-white mb-2">
+                      <option value="driver_license">State Driver's License</option>
+                      <option value="passport">US Passport</option>
+                      <option value="other">Other State ID</option>
+                   </select>
+                   <input type="file" required onChange={e => setKycDocFile(e.target.files?.[0] || null)} className="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 dark:file:bg-emerald-500/20 dark:file:text-emerald-400" />
+                 </div>
+                 <div className="pt-4 flex gap-3">
+                   <button type="button" onClick={() => setShowKYC(false)} className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-800 font-bold rounded-xl text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors pointer-cursor text-slate-700 dark:text-white">Cancel</button>
+                   <button type="submit" disabled={kycSSN.replace(/\D/g, '').length !== 9 || !kycDocFile} className="flex-1 px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl text-sm hover:bg-emerald-700 transition-colors disabled:opacity-50">Submit</button>
+                 </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* USER NOTIFICATION SYSTEM ALERTS */}
       {notifications.filter(n => !n.isRead).slice(0, 1).map((notif) => (

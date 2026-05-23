@@ -10,6 +10,7 @@ import { AuthModal } from './components/AuthModal';
 import { Sidebar } from './components/Sidebar';
 import { Logo } from './components/Logo';
 import { MobileNav } from './components/MobileNav';
+import { NotificationBell } from './components/NotificationBell';
 import { DashboardView } from './components/DashboardView';
 import { CardsView } from './components/CardsView';
 import { TransfersView } from './components/TransfersView';
@@ -225,7 +226,8 @@ export default function App() {
                 <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white">Hi, {user?.lastName || 'Client'}</span>
               </div>
 
-              <div className="flex items-center space-x-3.5 text-slate-900 dark:text-white relative">
+              <div className="flex items-center space-x-3.5 text-slate-900 dark:text-white relative z-40">
+                <NotificationBell />
                 <button 
                   onClick={() => setIsHeaderDropdownOpen(!isHeaderDropdownOpen)}
                   className="flex items-center space-x-2 p-1 rounded-full hover:bg-slate-200 dark:hover:bg-white/5 cursor-pointer transition-colors"

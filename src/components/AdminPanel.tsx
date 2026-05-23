@@ -29,11 +29,14 @@ export function AdminPanel() {
     adminEditBalance, 
     adminAddSystemTransaction, 
     adminPushSystemNotification, 
+    adminVerifyUser,
+    adminBroadcastNotification,
     adminFreezeUser, 
     adminSuspendUser
   } = useStore();
 
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [broadcastMode, setBroadcastMode] = useState<boolean>(false);
   
   // Update Balances Form
   const [checkingInput, setCheckingInput] = useState('15000');
@@ -97,10 +100,17 @@ export function AdminPanel() {
 
   const handlePushNotification = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedUserId || !notifTitle.trim() || !notifMsg.trim()) return;
+    if (!notifTitle.trim() || !notifMsg.trim()) return;
 
-    await adminPushSystemNotification(selectedUserId, notifTitle, notifMsg, 'system');
-    showSuccessAlert(`Alert alert dispatched successfully to ${activeTargetProfile?.email || selectedUserId}.`);
+    if (broadcastMode) {
+      await adminBroadcastNotification(notifTitle, notifMsg, 'system');
+      showSuccessAlert(`Alert broadcasted successfully to all users.`);
+    } else {
+      if (!selectedUserId) return;
+      await adminPushSystemNotification(selectedUserId, notifTitle, notifMsg, 'system');
+      showSuccessAlert(`Alert alert dispatched successfully to ${activeTargetProfile?.email || selectedUserId}.`);
+    }
+    
     setNotifTitle('');
     setNotifMsg('');
   };
@@ -117,6 +127,13 @@ export function AdminPanel() {
     const nextSuspended = !activeTargetProfile.isSuspended;
     await adminSuspendUser(activeTargetProfile.uid, nextSuspended);
     showSuccessAlert(`User ${activeTargetProfile.email} suspend isolation set to: ${nextSuspended}`);
+  };
+
+  const handleToggleVerify = async () => {
+    if (!activeTargetProfile) return;
+    const nextVerify = !activeTargetProfile.isVerified;
+    await adminVerifyUser(activeTargetProfile.uid, nextVerify);
+    showSuccessAlert(`User ${activeTargetProfile.email} KYC verification set to: ${nextVerify}`);
   };
 
   return (
@@ -179,6 +196,9 @@ export function AdminPanel() {
                       <span className="px-1.5 py-0.5 text-[7px] font-mono rounded bg-white/5 border border-white/10 uppercase tracking-widest text-slate-300">
                         {u.isAdmin ? 'system admin' : 'vip client'}
                       </span>
+                      {u.isVerified && (
+                        <span className="px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded text-[7px] font-mono uppercase font-bold">KYC VERIFIED</span>
+                      )}
                       {u.isFrozen && (
                         <span className="px-1 py-0.2 bg-red-500/10 border border-red-500/20 text-red-400 rounded text-[7px] font-mono uppercase">FROZEN</span>
                       )}
@@ -200,6 +220,18 @@ export function AdminPanel() {
               <div className="grid grid-cols-2 gap-2">
                 <button 
                   type="button"
+                  onClick={handleToggleVerify}
+                  className={`h-10 text-[10px] uppercase font-mono tracking-wider font-semibold transition-all rounded-lg border w-full cursor-pointer ${
+                    activeTargetProfile?.isVerified 
+                      ? 'bg-emerald-500 text-black border-emerald-500 font-bold' 
+                      : 'border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/5'
+                  }`}
+                >
+                  <span>{activeTargetProfile?.isVerified ? 'Revoke KYC' : 'Verify KYC'}</span>
+                </button>
+
+                <button 
+                  type="button"
                   onClick={handleToggleFreeze}
                   className={`h-10 text-[10px] uppercase font-mono tracking-wider font-semibold transition-all rounded-lg border w-full cursor-pointer ${
                     activeTargetProfile?.isFrozen 
@@ -213,7 +245,7 @@ export function AdminPanel() {
                 <button 
                   type="button"
                   onClick={handleToggleSuspend}
-                  className={`h-10 text-[10px] uppercase font-mono tracking-wider font-semibold transition-all rounded-lg border w-full cursor-pointer ${
+                  className={`h-10 text-[10px] uppercase font-mono tracking-wider font-semibold transition-all rounded-lg border w-full cursor-pointer col-span-2 mt-1 ${
                     activeTargetProfile?.isSuspended 
                       ? 'bg-orange-500 text-black border-orange-500 font-bold' 
                       : 'border-orange-500/20 text-orange-400 hover:bg-orange-500/5'
@@ -274,6 +306,16 @@ export function AdminPanel() {
             </div>
 
             <form onSubmit={handlePushNotification} className="space-y-3">
+              <label className="flex items-center space-x-2 text-xs text-white">
+                 <input 
+                   type="checkbox" 
+                   checked={broadcastMode} 
+                   onChange={(e) => setBroadcastMode(e.target.checked)} 
+                   className="rounded text-amber-500 bg-white/5 border-white/10"
+                 />
+                 <span>Queue notification locally to ALL users</span>
+              </label>
+              
               <input 
                 type="text"
                 placeholder="Alert Header Title"

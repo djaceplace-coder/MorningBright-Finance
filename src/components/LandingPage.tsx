@@ -10,9 +10,48 @@ interface LandingProps {
 
 export function LandingPage({ onEnterApp, onSignUp }: LandingProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeArticle, setActiveArticle] = useState<any | null>(null);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans selection:bg-emerald-500/30 overflow-x-hidden">
+      {/* ARTICLE MODAL */}
+      <AnimatePresence>
+        {activeArticle && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden relative"
+            >
+              <button 
+                onClick={() => setActiveArticle(null)}
+                className="absolute top-4 right-4 z-10 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+              >
+                <X size={18} />
+              </button>
+              <div className="w-full h-64 bg-slate-100 dark:bg-slate-800 relative">
+                 <img crossOrigin="anonymous" referrerPolicy="no-referrer" src={activeArticle.img} alt={activeArticle.title} className="object-cover w-full h-full" />
+              </div>
+              <div className="p-8">
+                <div className="text-emerald-600 dark:text-emerald-400 font-bold text-sm mb-2 uppercase tracking-wider">Morning Bright Learn</div>
+                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-6 leading-tight">{activeArticle.title}</h2>
+                <div className="prose prose-slate dark:prose-invert">
+                  <p className="text-slate-600 dark:text-slate-300 text-lg leading-relaxed">{activeArticle.content}</p>
+                  <p className="text-slate-600 dark:text-slate-300 mt-4 leading-relaxed">
+                    This is an educational resource provided by Morning Bright to help you establish better money habits. For personalized advice, consider setting up a meeting with one of our financial advisors. Our goal is to empower your financial journey with transparent, easy-to-understand insights.
+                  </p>
+                </div>
+                <div className="mt-8 flex justify-end">
+                  <button onClick={() => setActiveArticle(null)} className="px-6 py-2.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition-colors">Close Article</button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* LAYER 1: LEGITIMACY INFRASTRUCTURE (FDIC Badge) */}
       <div className="bg-slate-900 dark:bg-[#03081a] text-slate-300 px-4 py-2 border-b border-white/10 hidden md:block">
         <div className="max-w-7xl mx-auto flex justify-between items-center text-xs">
@@ -121,7 +160,7 @@ export function LandingPage({ onEnterApp, onSignUp }: LandingProps) {
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-300">
                   <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-emerald-600 dark:text-emerald-400">2</div>
-                  <span>Receive $2,000 in direct deposits in 90 days</span>
+                  <span>Complete KYC registration</span>
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-300">
                   <div className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-emerald-600 dark:text-emerald-400">3</div>
@@ -241,13 +280,14 @@ export function LandingPage({ onEnterApp, onSignUp }: LandingProps) {
           
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { title: 'The new rules of retirement saving in 2026', img: 'bg-blue-100 dark:bg-blue-900/30' },
-              { title: 'How to build your credit score from scratch', img: 'bg-emerald-100 dark:bg-emerald-900/30' },
-              { title: 'Is buying a house still a smart investment?', img: 'bg-purple-100 dark:bg-purple-900/30' }
+              { title: 'The new rules of retirement saving in 2026', img: 'https://images.unsplash.com/photo-1556740714-a83f945391d3?q=80&w=600&auto=format&fit=crop', content: 'Retirement planning is shifting. Learn how the latest regulatory changes in 2026 impact your 401(k), IRA contributions, and long-term financial security.' },
+              { title: 'How to build your credit score from scratch', img: 'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?q=80&w=600&auto=format&fit=crop', content: 'Starting with no credit can be daunting. We break down the exact strategies—from secured cards to credit builder loans—that establish your score fast.' },
+              { title: 'Is buying a house still a smart investment?', img: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=600&auto=format&fit=crop', content: 'With fluctuating interest rates and dynamic housing markets, we analyze the current landscape to help you decide if renting or buying makes more sense for your portfolio.' }
             ].map((article, i) => (
-              <div key={i} className="group cursor-pointer">
-                <div className={`w-full h-48 ${article.img} rounded-2xl mb-4 flex items-center justify-center`}>
-                   <BookOpen size={40} className="text-slate-400 dark:text-slate-500 opacity-50 group-hover:scale-110 transition-transform" />
+              <div key={i} className="group cursor-pointer" onClick={() => setActiveArticle(article)}>
+                <div className="w-full h-48 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-4 overflow-hidden relative">
+                   <img crossOrigin="anonymous" referrerPolicy="no-referrer" src={article.img} alt={article.title} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
                 </div>
                 <h3 className="font-bold text-lg text-slate-900 dark:text-white group-hover:text-emerald-600 transition-colors">{article.title}</h3>
                 <p className="text-sm text-emerald-600 dark:text-emerald-400 font-semibold mt-2">Read article ↗</p>
@@ -269,9 +309,6 @@ export function LandingPage({ onEnterApp, onSignUp }: LandingProps) {
               </div>
               <p className="text-xs text-slate-500 mb-4">We are committed to making banking clear, transparent, and fair for everyone.</p>
               <div className="flex space-x-4">
-                 {/* Social placeholders */}
-                 <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800"></div>
-                 <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800"></div>
               </div>
             </div>
             

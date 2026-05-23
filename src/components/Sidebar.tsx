@@ -22,6 +22,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useStore } from '../store';
 import { Logo } from './Logo';
 
+import { NotificationBell } from './NotificationBell';
+
 interface SidebarProps {
   currentTab: string;
   onChangeTab: (tab: string) => void;
@@ -49,12 +51,15 @@ export function Sidebar({ currentTab, onChangeTab }: SidebarProps) {
       
       {/* BRAND HEADER */}
       <div className="space-y-6">
-        <div className="flex items-center space-x-3 px-2">
-          <Logo className="w-9 h-9" withBackground={true} />
-          <div>
-            <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white block">Morning Bright</span>
-            <span className="text-[9px] block text-slate-500 font-semibold tracking-widest font-mono uppercase">FINANCE</span>
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center space-x-3">
+            <Logo className="w-9 h-9" withBackground={true} />
+            <div>
+              <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white block">Morning Bright</span>
+              <span className="text-[9px] block text-slate-500 font-semibold tracking-widest font-mono uppercase">FINANCE</span>
+            </div>
           </div>
+          <NotificationBell />
         </div>
  
         {/* ACCOUNT SNAPSHOT BRAND */}

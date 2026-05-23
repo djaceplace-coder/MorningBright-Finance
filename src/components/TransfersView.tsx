@@ -29,7 +29,7 @@ export function TransfersView() {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('wire');
-  const [bank, setBank] = useState('internal');
+  const [bank, setBank] = useState('');
   
   // Search and tabs state
   const [searchQuery, setSearchQuery] = useState('');
@@ -142,8 +142,10 @@ export function TransfersView() {
                   value={bank}
                   onChange={(e) => setBank(e.target.value)}
                   className="w-full h-11 px-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                  required
                 >
-                  <option value="internal">Morning Bright (Internal)</option>
+                  <option value="" disabled>Choose receiving bank...</option>
+                  <option value="internal">Morning Bright (Internal Transfer)</option>
                   <optgroup label="United States">
                     <option value="chase">JPMorgan Chase</option>
                     <option value="bofa">Bank of America</option>
@@ -155,23 +157,62 @@ export function TransfersView() {
                     <option value="pnc">PNC Bank</option>
                     <option value="truist">Truist Financial</option>
                     <option value="goldman">Goldman Sachs</option>
+                    <option value="bny">BNY Mellon</option>
+                    <option value="statestreet">State Street</option>
+                    <option value="discover">Discover Bank</option>
+                    <option value="ally">Ally Bank</option>
+                    <option value="synchrony">Synchrony Bank</option>
+                    <option value="barclays_us">Barclays US</option>
+                    <option value="citizens">Citizens Bank</option>
+                    <option value="fifth_third">Fifth Third Bank</option>
+                    <option value="keybank">KeyBank</option>
+                    <option value="huntington">Huntington National Bank</option>
+                    <option value="zions">Zions Bank</option>
                   </optgroup>
                   <optgroup label="United Kingdom & Europe">
                     <option value="barclays">Barclays</option>
                     <option value="hsbc">HSBC</option>
                     <option value="natwest">NatWest</option>
+                    <option value="lloyds">Lloyds Banking Group</option>
+                    <option value="rbs">Royal Bank of Scotland</option>
+                    <option value="santander_uk">Santander UK</option>
+                    <option value="standard_chartered">Standard Chartered</option>
                     <option value="monzo">Monzo</option>
                     <option value="bnp">BNP Paribas</option>
                     <option value="db">Deutsche Bank</option>
                     <option value="revolut">Revolut</option>
                     <option value="n26">N26</option>
+                    <option value="socgen">Société Générale</option>
+                    <option value="credit_agricole">Crédit Agricole</option>
+                    <option value="commerzbank">Commerzbank</option>
+                    <option value="ubs">UBS</option>
+                    <option value="ing">ING Group</option>
+                    <option value="abn_amro">ABN AMRO</option>
+                    <option value="rabobank">Rabobank</option>
                   </optgroup>
-                  <optgroup label="Asia Pacific">
+                  <optgroup label="Canada">
+                    <option value="rbc">Royal Bank of Canada</option>
+                    <option value="td_canada">TD Canada Trust</option>
+                    <option value="scotiabank">Scotiabank</option>
+                    <option value="bmo">Bank of Montreal</option>
+                    <option value="cibc">CIBC</option>
+                    <option value="national_bank">National Bank of Canada</option>
+                  </optgroup>
+                  <optgroup label="Asia Pacific & Oceania">
                     <option value="sg">DBS Bank (Singapore)</option>
+                    <option value="ocbc">OCBC Bank</option>
+                    <option value="uob">UOB</option>
                     <option value="mufg">MUFG Bank (Japan)</option>
+                    <option value="smbc">SMBC</option>
+                    <option value="mizuho">Mizuho Bank</option>
                     <option value="anz">ANZ (Australia)</option>
                     <option value="cba">Commonwealth Bank (Australia)</option>
+                    <option value="westpac">Westpac</option>
+                    <option value="nab">National Australia Bank</option>
                     <option value="hkma">Bank of China (Hong Kong)</option>
+                    <option value="sbi">State Bank of India</option>
+                    <option value="hdfc">HDFC Bank</option>
+                    <option value="icici">ICICI Bank</option>
                   </optgroup>
                   <optgroup label="Digital / Crypto">
                     <option value="crypto_btc">Bitcoin Network</option>
@@ -179,6 +220,9 @@ export function TransfersView() {
                     <option value="crypto_sol">Solana Network</option>
                     <option value="kraken">Kraken Exchange</option>
                     <option value="coinbase">Coinbase</option>
+                    <option value="binance">Binance</option>
+                    <option value="gemini">Gemini</option>
+                    <option value="crypto_com">Crypto.com</option>
                   </optgroup>
                 </select>
               </div>

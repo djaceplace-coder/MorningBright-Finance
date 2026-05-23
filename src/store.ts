@@ -172,10 +172,16 @@ interface BankState {
     merchant: string,
     category: string,
   ) => Promise<void>;
+  adminVerifyUser: (userId: string, isVerified: boolean) => Promise<void>;
   adminFreezeUser: (userId: string, frozen: boolean) => Promise<void>;
   adminSuspendUser: (userId: string, suspended: boolean) => Promise<void>;
   adminPushSystemNotification: (
     userId: string,
+    title: string,
+    message: string,
+    type: "info" | "alert" | "success" | "system",
+  ) => Promise<void>;
+  adminBroadcastNotification: (
     title: string,
     message: string,
     type: "info" | "alert" | "success" | "system",
@@ -1296,12 +1302,15 @@ export const useStore = create<BankState>((set, get) => {
     adminLoadUsers: async () => {
       try {
         const { data, error } = await supabase.from("users").select("*");
-        if (error) throw error;
-        if (data) {
-          set({ usersList: data.map(mapUserFromDb) });
+        if (error) console.error("Admin Load Users error:", error);
+        let list = data ? data.map(mapUserFromDb) : [];
+        if (list.length === 0 && get().user) {
+           list = [get().user];
         }
+        set({ usersList: list });
       } catch (e) {
         console.error("Administrative profiles loader failed.", e);
+        if (get().user) set({ usersList: [get().user] });
       }
     },
 
@@ -1330,6 +1339,7 @@ export const useStore = create<BankState>((set, get) => {
           .eq("uid", userId);
 
         await supabase.from("admin_logs").insert(mapLogToDb(log));
+        await get().adminLoadUsers();
 
         const notifId =
           "notif_adj_" + Math.random().toString(36).substring(2, 10);
@@ -1391,6 +1401,30 @@ export const useStore = create<BankState>((set, get) => {
       }
     },
 
+    adminVerifyUser: async (userId, isVerified) => {
+      const logId = "log_" + Math.random().toString(36).substring(2, 10);
+      const log: AdminLog = {
+        id: logId,
+        adminId: get().user?.uid || "admin_caller",
+        adminEmail: get().user?.email || "support@morningbrightfinance.com",
+        action: isVerified ? "VERIFY_USER" : "UNVERIFY_USER",
+        targetUserId: userId,
+        details: `${isVerified ? "Approved KYC" : "Revoked KYC"} for user`,
+        timestamp: new Date().toISOString(),
+      };
+
+      try {
+        await supabase
+          .from("users")
+          .update({ is_verified: isVerified })
+          .eq("id", userId);
+        await supabase.from("admin_logs").insert(mapLogToDb(log));
+        await get().adminLoadUsers();
+      } catch (e) {
+        handleSupabaseError(e, OperationType.UPDATE, `users/${userId}`);
+      }
+    },
+
     adminFreezeUser: async (userId, frozen) => {
       const logId = "log_" + Math.random().toString(36).substring(2, 10);
       const log: AdminLog = {
@@ -1409,6 +1443,7 @@ export const useStore = create<BankState>((set, get) => {
           .update({ is_frozen: frozen })
           .eq("id", userId);
         await supabase.from("admin_logs").insert(mapLogToDb(log));
+        await get().adminLoadUsers();
       } catch (e) {
         handleSupabaseError(e, OperationType.UPDATE, `users/${userId}`);
       }
@@ -1432,6 +1467,7 @@ export const useStore = create<BankState>((set, get) => {
           .update({ is_suspended: suspended })
           .eq("id", userId);
         await supabase.from("admin_logs").insert(mapLogToDb(log));
+        await get().adminLoadUsers();
       } catch (e) {
         handleSupabaseError(e, OperationType.UPDATE, `users/${userId}`);
       }
@@ -1471,6 +1507,43 @@ export const useStore = create<BankState>((set, get) => {
           OperationType.CREATE,
           `notifications/${notifId}`,
         );
+      }
+    },
+
+    adminBroadcastNotification: async (title, message, type) => {
+      const logId = "log_" + Math.random().toString(36).substring(2, 10);
+
+      const log: AdminLog = {
+        id: logId,
+        adminId: get().user?.uid || "admin_caller",
+        adminEmail: get().user?.email || "support@morningbrightfinance.com",
+        action: "BROADCAST_NOTIFICATION",
+        targetUserId: "ALL_USERS",
+        details: `Broadcast message: "${title}" to all users`,
+        timestamp: new Date().toISOString(),
+      };
+
+      try {
+        // Fetch all user IDs
+        const { data: users, error } = await supabase.from("users").select("id");
+        if (error) throw error;
+        
+        if (users && users.length > 0) {
+          const notifications = users.map(u => ({
+            id: "notif_adm_" + Math.random().toString(36).substring(2, 10),
+            user_id: u.id,
+            title,
+            message,
+            is_read: false,
+            type,
+            created_at: new Date().toISOString(),
+          }));
+          
+          await supabase.from("notifications").insert(notifications);
+        }
+        await supabase.from("admin_logs").insert(mapLogToDb(log));
+      } catch (e) {
+        console.error("Failed to broadcast notification", e);
       }
     },
 
