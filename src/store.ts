@@ -38,6 +38,7 @@ import {
   TransactionType,
   TransactionStatus,
   Beneficiary,
+  SupportTicket,
 } from "./components/types";
 
 // Helper to generate random 16 digit card

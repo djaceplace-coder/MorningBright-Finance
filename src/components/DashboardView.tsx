@@ -101,14 +101,6 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
     }
   };
 
-  const handleApplyFunding = async () => {
-    const val = parseFloat(fundingAmount);
-    if (!isNaN(val) && val > 0) {
-      await addFunds(val, fundingTarget);
-      setFundingModalOpen(false);
-    }
-  };
-
   const handleSubmitKYC = (e: React.FormEvent) => {
     e.preventDefault();
     if (kycSSN.replace(/\D/g, '').length !== 9 || !kycDocFile) return;
