@@ -38,7 +38,7 @@ interface DashboardViewProps {
 }
 
 export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewProps) {
-  const { user, balance, transactions, notifications, addFunds } = useStore();
+  const { user, balance, transactions, notifications, markNotificationAsRead, addFunds } = useStore();
   const [hideBalances, setHideBalances] = useState(false);
   const [showKYC, setShowKYC] = useState(false);
   const [kycSSN, setKycSSN] = useState('');
@@ -101,9 +101,19 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
     }
   };
 
-  const handleSubmitKYC = (e: React.FormEvent) => {
+  const handleSubmitKYC = async (e: React.FormEvent) => {
     e.preventDefault();
     if (kycSSN.replace(/\D/g, '').length !== 9 || !kycDocFile) return;
+    
+    // Create a support ticket for KYC
+    try {
+      await useStore.getState().createTicket(
+        "KYC Identity Verification Packet",
+        `User submitted SSN: ***-**-${kycSSN.slice(-4)}. Document Type: ${kycDocType}. Please review account for full verification.`,
+        "account_management"
+      );
+    } catch(e) {}
+
     setKycSubmitted(true);
     setShowKYC(false);
   };
@@ -196,7 +206,7 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
             </div>
           </div>
           <button 
-            onClick={() => useStore.getState().markNotificationAsRead(notif.id)}
+            onClick={() => markNotificationAsRead(notif.id)}
             className="text-[9px] font-mono underline hover:text-slate-950 dark:hover:text-white uppercase tracking-widest outline-none border-none bg-transparent cursor-pointer font-bold"
           >
             Dismiss

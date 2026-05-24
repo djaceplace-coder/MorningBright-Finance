@@ -55,21 +55,7 @@ const randomDate = () => {
 
 // Initial interactive assets for onboarding environment
 const INITIAL_TRANSACTIONS = (userId: string): BankTransaction[] => [];
-const INITIAL_CARDS = (userId: string, name: string): VirtualCard[] => [
-  {
-    id: crypto.randomUUID(),
-    userId,
-    cardNumber: randomCard(),
-    cardholderName: name,
-    expiryDate: randomDate(),
-    cvv: Math.floor(100 + Math.random() * 900).toString(),
-    cardType: "platinum",
-    spendingLimit: 5000,
-    spentThisMonth: 0,
-    isFrozen: false,
-    createdAt: new Date().toISOString(),
-  },
-];
+const INITIAL_CARDS = (userId: string, name: string): VirtualCard[] => [];
 const INITIAL_SAVINGS = (userId: string): SavingsGoal[] => [];
 const INITIAL_NOTIFICATIONS = (userId: string): BankNotification[] => [
   {
@@ -77,7 +63,7 @@ const INITIAL_NOTIFICATIONS = (userId: string): BankNotification[] => [
     userId,
     title: "Welcome to Morning Bright",
     message:
-      "Your new digital banking account is ready. Your initial deposit has been credited and your virtual card is active.",
+      "Your new digital banking account is ready. Please complete your KYC verification process to unlock full account features such as external transfers and card generation.",
     type: "system",
     isRead: false,
     createdAt: new Date().toISOString(),
@@ -1233,6 +1219,12 @@ export const useStore = create<BankState>((set, get) => {
     },
 
     markNotificationAsRead: async (id) => {
+      // Optimistic local update
+      set((state) => ({
+        notifications: state.notifications.map((n) =>
+          n.id === id ? { ...n, isRead: true } : n
+        ),
+      }));
       try {
         await supabase
           .from("notifications")

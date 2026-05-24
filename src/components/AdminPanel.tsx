@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabase';
 import { useStore } from '../store';
 import { 
   ShieldAlert, 
@@ -72,6 +73,22 @@ export function AdminPanel() {
   }, [usersList, selectedUserId]);
 
   const activeTargetProfile = usersList.find(u => u.uid === selectedUserId) || user;
+
+  const fetchActiveBalances = async () => {
+    if (!selectedUserId) return;
+    const { data } = await supabase.from('balances').select('*').eq('uid', selectedUserId).single();
+    if (data) {
+      setCheckingInput(data.checking.toString());
+      setSavingsInput(data.savings.toString());
+    } else {
+      setCheckingInput('0');
+      setSavingsInput('0');
+    }
+  };
+
+  useEffect(() => {
+    fetchActiveBalances();
+  }, [selectedUserId]);
 
   const showSuccessAlert = (message: string) => {
     setAlertSuccess(message);
@@ -464,6 +481,18 @@ export function AdminPanel() {
                   </div>
                   
                   <div className="flex flex-col space-y-2 justify-center border-t border-white/5 pt-3 md:border-t-0 md:pt-0 md:border-l pl-o md:pl-4">
+                    {ticket.subject === "KYC Identity Verification Packet" && !targetProfile?.isVerified && (
+                      <button 
+                        onClick={() => {
+                          adminVerifyUser(ticket.userId, true);
+                          adminUpdateTicketStatus(ticket.id, 'resolved');
+                          showSuccessAlert("KYC Approved & Ticket Resolved.");
+                        }}
+                        className="px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-400 text-black text-[10px] font-bold uppercase transition-colors"
+                      >
+                        Approve KYC
+                      </button>
+                    )}
                     <button 
                       onClick={() => adminUpdateTicketStatus(ticket.id, 'in_progress')}
                       disabled={ticket.status === 'in_progress'}
