@@ -4,6 +4,7 @@
  */
 
 import { create } from "zustand";
+import toast from "react-hot-toast";
 import {
   supabase,
   handleSupabaseError,
@@ -579,27 +580,6 @@ export const useStore = create<BankState>((set, get) => {
             if (ins3.error)
               console.error("settings auto-insert error:", ins3.error);
 
-            // Seed sub-records for recovered user
-            for (const tx of INITIAL_TRANSACTIONS(authData.user.id)) {
-              await supabase
-                .from("transactions")
-                .insert(mapTransactionToDb(tx));
-            }
-            for (const card of INITIAL_CARDS(
-              authData.user.id,
-              `${first} ${last}`,
-            )) {
-              await supabase.from("cards").insert(mapCardToDb(card));
-            }
-            for (const goal of INITIAL_SAVINGS(authData.user.id)) {
-              await supabase.from("savings_goals").insert(mapSavingsToDb(goal));
-            }
-            for (const notif of INITIAL_NOTIFICATIONS(authData.user.id)) {
-              await supabase
-                .from("notifications")
-                .insert(mapNotificationToDb(notif));
-            }
-
             // Re-fetch
             const u = await supabase
               .from("users")
@@ -775,7 +755,19 @@ export const useStore = create<BankState>((set, get) => {
               table: "notifications",
               filter: `user_id=eq.${uid}`,
             },
-            async () => {
+            async (payload) => {
+              if (payload.eventType === 'INSERT') {
+                const notif = mapNotificationFromDb(payload.new);
+                toast.success(notif.message, { 
+                  icon: '🔔',
+                  duration: 5000,
+                  style: {
+                    background: '#0f172a',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }
+                });
+              }
               const { data } = await supabase
                 .from("notifications")
                 .select("*")

@@ -36,6 +36,7 @@ import {
   Download
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
+import { Toaster } from 'react-hot-toast';
 
 declare global {
   interface Window {
@@ -170,6 +171,7 @@ export default function App() {
   // RENDER LANDING PAGE OR PRIVATE DASHBOARD
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300 flex flex-col">
+      <Toaster position="top-center" />
       {!isPWA && (
         <div className="bg-emerald-600 text-white px-4 py-2 flex items-center justify-between z-50 shadow-sm relative">
           <div className="flex items-center space-x-3">
