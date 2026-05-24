@@ -464,8 +464,13 @@ export function AdminPanel() {
                     <p className="text-slate-400 leading-relaxed max-w-2xl">{ticket.description}</p>
                     
                     {ticket.documentBase64 && (
-                      <div className="mt-2 text-[10px] flex items-center space-x-2 text-indigo-400 bg-indigo-500/10 w-max px-2 py-1 rounded">
-                        <span>📎 Document Attached Reference</span>
+                      <div className="mt-2 text-[10px] flex items-center space-x-2 text-indigo-400 bg-indigo-500/10 w-max px-2 py-1 rounded cursor-pointer hover:bg-indigo-500/20" onClick={() => {
+                        const win = window.open();
+                        if (win) {
+                            win.document.write(`<iframe src="${ticket.documentBase64}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+                        }
+                      }}>
+                        <span>📎 View Attached Document</span>
                       </div>
                     )}
                     

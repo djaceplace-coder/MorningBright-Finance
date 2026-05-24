@@ -302,16 +302,6 @@ export const useStore = create<BankState>((set, get) => {
           );
         }
 
-        // If email confirmation is required, session will be null.
-        if (!data.session) {
-          set({
-            loading: false,
-            successMessage:
-              "Account registered successfully! Please sign in to continue.",
-          });
-          return;
-        }
-
         // Provision initial relational records
         const profile: UserProfile = {
           uid: data.user.id,
@@ -378,6 +368,16 @@ export const useStore = create<BankState>((set, get) => {
             .from("notifications")
             .insert(mapNotificationToDb(notif))
             .then();
+        }
+
+        // If email confirmation is required, session will be null.
+        if (!data.session) {
+          set({
+            loading: false,
+            successMessage:
+              "Account registered successfully! Please sign in to continue.",
+          });
+          return;
         }
 
         set({ loading: false });

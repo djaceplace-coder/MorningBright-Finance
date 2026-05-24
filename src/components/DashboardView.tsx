@@ -105,17 +105,27 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
     e.preventDefault();
     if (kycSSN.replace(/\D/g, '').length !== 9 || !kycDocFile) return;
     
-    // Create a support ticket for KYC
-    try {
-      await useStore.getState().createTicket(
-        "KYC Identity Verification Packet",
-        `User submitted SSN: ***-**-${kycSSN.slice(-4)}. Document Type: ${kycDocType}. Please review account for full verification.`,
-        "account_management"
-      );
-    } catch(e) {}
+    // Read file as base64
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64String = reader.result as string;
+      // Create a support ticket for KYC
+      try {
+        await useStore.getState().createTicket(
+          "KYC Identity Verification Packet",
+          `User submitted SSN: ***-**-${kycSSN.slice(-4)}. Document Type: ${kycDocType}. Please review account for full verification.`,
+          "account_management",
+          base64String
+        );
+      } catch(e) {}
 
-    setKycSubmitted(true);
-    setShowKYC(false);
+      setKycSubmitted(true);
+      setShowKYC(false);
+    };
+    reader.onerror = () => {
+      alert("Failed to read document.");
+    };
+    reader.readAsDataURL(kycDocFile);
   };
 
   return (
