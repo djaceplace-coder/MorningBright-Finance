@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { ShieldCheck, Smartphone, Landmark, Search, Lock, Users, ArrowRight, CheckCircle2, ChevronRight, Menu, X, BookOpen, CreditCard, Home, Briefcase, Heart, PieChart, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Logo } from './Logo';
@@ -272,7 +273,7 @@ export function LandingPage({ onEnterApp, onSignUp }: LandingProps) {
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Better Money Habits</h2>
               <p className="text-slate-600 dark:text-slate-400 text-lg">Knowledge is your most valuable asset.</p>
             </div>
-            <button className="hidden md:flex items-center space-x-2 text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
+            <button onClick={() => toast("Learning center is coming soon!", {icon: '📚'})} className="hidden md:flex items-center space-x-2 text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
               <span>Explore learning center</span>
               <ArrowRight size={16} />
             </button>
@@ -280,7 +281,7 @@ export function LandingPage({ onEnterApp, onSignUp }: LandingProps) {
           
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { title: 'The new rules of retirement saving in 2026', img: 'https://images.unsplash.com/photo-1556740714-a83f945391d3?q=80&w=600&auto=format&fit=crop', content: 'Retirement planning is shifting. Learn how the latest regulatory changes in 2026 impact your 401(k), IRA contributions, and long-term financial security.' },
+              { title: 'The new rules of retirement saving in 2026', img: 'https://images.unsplash.com/photo-1579621970588-a35d0e7ab9b6?q=80&w=600&auto=format&fit=crop', content: 'Retirement planning is shifting. Learn how the latest regulatory changes in 2026 impact your 401(k), IRA contributions, and long-term financial security.' },
               { title: 'How to build your credit score from scratch', img: 'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?q=80&w=600&auto=format&fit=crop', content: 'Starting with no credit can be daunting. We break down the exact strategies—from secured cards to credit builder loans—that establish your score fast.' },
               { title: 'Is buying a house still a smart investment?', img: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=600&auto=format&fit=crop', content: 'With fluctuating interest rates and dynamic housing markets, we analyze the current landscape to help you decide if renting or buying makes more sense for your portfolio.' }
             ].map((article, i) => (
@@ -294,7 +295,7 @@ export function LandingPage({ onEnterApp, onSignUp }: LandingProps) {
               </div>
             ))}
           </div>
-          <button className="mt-8 md:hidden text-emerald-600 font-bold w-full text-center">Explore learning center →</button>
+          <button onClick={() => toast("Learning center is coming soon!", {icon: '📚'})} className="mt-8 md:hidden text-emerald-600 font-bold w-full text-center">Explore learning center →</button>
         </div>
       </section>
 

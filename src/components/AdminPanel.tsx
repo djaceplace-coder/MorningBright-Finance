@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import toast from "react-hot-toast";
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { useStore } from '../store';
@@ -104,8 +105,7 @@ export function AdminPanel() {
     const sav = parseFloat(savingsInput);
 
     if (isNaN(chk) || isNaN(sav)) return;
-    await adminEditBalance(selectedUserId, chk, sav);
-    showSuccessAlert(`Adjusted transaction for user ${activeTargetProfile?.email || selectedUserId} to Checking: $${chk}, Savings: $${sav}`);
+    try { await adminEditBalance(selectedUserId, chk, sav); toast.success(`Adjusted transaction for user ${activeTargetProfile?.email || selectedUserId} to Checking: $${chk}, Savings: $${sav}`); } catch (err) {}
   };
 
   const handleInsertTransaction = async (e: React.FormEvent) => {
@@ -114,8 +114,7 @@ export function AdminPanel() {
     const amt = parseFloat(txAmount);
     if (isNaN(amt) || amt <= 0) return;
 
-    await adminAddSystemTransaction(selectedUserId, amt, txType, txMerchant, txCategory);
-    showSuccessAlert(`Injected transaction of $${amt} for ${activeTargetProfile?.email || selectedUserId}.`);
+    try { await adminAddSystemTransaction(selectedUserId, amt, txType, txMerchant, txCategory); toast.success(`Injected transaction of $${amt} for ${activeTargetProfile?.email || selectedUserId}.`); } catch (err) {}
     setTxAmount('100');
   };
 
@@ -124,12 +123,10 @@ export function AdminPanel() {
     if (!notifTitle.trim() || !notifMsg.trim()) return;
 
     if (broadcastMode) {
-      await adminBroadcastNotification(notifTitle, notifMsg, 'system');
-      showSuccessAlert(`Alert broadcasted successfully to all users.`);
+      try { await adminBroadcastNotification(notifTitle, notifMsg, 'system'); toast.success(`Alert broadcasted successfully to all users.`); } catch (err) {}
     } else {
       if (!selectedUserId) return;
-      await adminPushSystemNotification(selectedUserId, notifTitle, notifMsg, 'system');
-      showSuccessAlert(`Alert alert dispatched successfully to ${activeTargetProfile?.email || selectedUserId}.`);
+      try { await adminPushSystemNotification(selectedUserId, notifTitle, notifMsg, 'system'); toast.success(`Alert alert dispatched successfully to ${activeTargetProfile?.email || selectedUserId}.`); } catch (err) {}
     }
     
     setNotifTitle('');
@@ -139,22 +136,19 @@ export function AdminPanel() {
   const handleToggleFreeze = async () => {
     if (!activeTargetProfile) return;
     const nextFreeze = !activeTargetProfile.isFrozen;
-    await adminFreezeUser(activeTargetProfile.uid, nextFreeze);
-    showSuccessAlert(`User ${activeTargetProfile.email} frozen status set to: ${nextFreeze}`);
+    try { await adminFreezeUser(activeTargetProfile.uid, nextFreeze); toast.success(`User ${activeTargetProfile.email} frozen status set to: ${nextFreeze}`); } catch (err) {}
   };
 
   const handleToggleSuspend = async () => {
     if (!activeTargetProfile) return;
     const nextSuspended = !activeTargetProfile.isSuspended;
-    await adminSuspendUser(activeTargetProfile.uid, nextSuspended);
-    showSuccessAlert(`User ${activeTargetProfile.email} suspend isolation set to: ${nextSuspended}`);
+    try { await adminSuspendUser(activeTargetProfile.uid, nextSuspended); toast.success(`User ${activeTargetProfile.email} suspend isolation set to: ${nextSuspended}`); } catch (err) {}
   };
 
   const handleToggleVerify = async () => {
     if (!activeTargetProfile) return;
     const nextVerify = !activeTargetProfile.isVerified;
-    await adminVerifyUser(activeTargetProfile.uid, nextVerify);
-    showSuccessAlert(`User ${activeTargetProfile.email} KYC verification set to: ${nextVerify}`);
+    try { await adminVerifyUser(activeTargetProfile.uid, nextVerify); toast.success(`User ${activeTargetProfile.email} KYC verification set to: ${nextVerify}`); } catch (err) {}
   };
 
   return (

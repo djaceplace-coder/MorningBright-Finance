@@ -58,18 +58,7 @@ const randomDate = () => {
 const INITIAL_TRANSACTIONS = (userId: string): BankTransaction[] => [];
 const INITIAL_CARDS = (userId: string, name: string): VirtualCard[] => [];
 const INITIAL_SAVINGS = (userId: string): SavingsGoal[] => [];
-const INITIAL_NOTIFICATIONS = (userId: string): BankNotification[] => [
-  {
-    id: crypto.randomUUID(),
-    userId,
-    title: "Welcome to Morning Bright",
-    message:
-      "Your new digital banking account is ready. Please complete your KYC verification process to unlock full account features such as external transfers and card generation.",
-    type: "system",
-    isRead: false,
-    createdAt: new Date().toISOString(),
-  },
-];
+const INITIAL_NOTIFICATIONS = (userId: string): BankNotification[] => [];
 
 // Support Ticket mappings
 const mapTicketFromDb = (db: any): SupportTicket => ({
@@ -190,11 +179,19 @@ interface BankState {
   ) => Promise<void>;
   // Support Tickets
   loadTickets: () => Promise<void>;
-  createTicket: (subject: string, description: string, category: string, documentBase64?: string) => Promise<void>;
-  
+  createTicket: (
+    subject: string,
+    description: string,
+    category: string,
+    documentBase64?: string,
+  ) => Promise<void>;
+
   // Admin Support Tickets
   adminLoadTickets: () => Promise<void>;
-  adminUpdateTicketStatus: (ticketId: string, status: "open" | "in_progress" | "resolved") => Promise<void>;
+  adminUpdateTicketStatus: (
+    ticketId: string,
+    status: "open" | "in_progress" | "resolved",
+  ) => Promise<void>;
   adminLoadLogs: () => Promise<void>;
 }
 
@@ -453,13 +450,11 @@ export const useStore = create<BankState>((set, get) => {
         const nextProfile = { ...u, biometricsEnabled: enabled };
         set({ user: nextProfile });
         try {
-          const { error } = await supabase
-            .from("users")
-            .update({ biometrics_enabled: enabled })
+          const { error } = await supabase.from("users").update({ biometrics_enabled: enabled })
             .eq("id", u.uid);
           if (error) throw error;
         } catch (e) {
-          handleSupabaseError(e, OperationType.UPDATE, `users/${u.uid}`);
+          toast.error(e.message || "Operation failed"); throw e;
         }
       }
     },
@@ -756,16 +751,16 @@ export const useStore = create<BankState>((set, get) => {
               filter: `user_id=eq.${uid}`,
             },
             async (payload) => {
-              if (payload.eventType === 'INSERT') {
+              if (payload.eventType === "INSERT") {
                 const notif = mapNotificationFromDb(payload.new);
-                toast.success(notif.message, { 
-                  icon: '🔔',
+                toast.success(notif.message, {
+                  icon: "🔔",
                   duration: 5000,
                   style: {
-                    background: '#0f172a',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                  }
+                    background: "#0f172a",
+                    color: "#fff",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                  },
                 });
               }
               const { data } = await supabase
@@ -864,15 +859,11 @@ export const useStore = create<BankState>((set, get) => {
       // Real auth post via Supabase transactional entities updates
       try {
         // Post transaction record
-        const { error: tErr } = await supabase
-          .from("transactions")
-          .insert(mapTransactionToDb(txSent));
+        const { error: tErr } = await supabase.from("transactions").insert(mapTransactionToDb(txSent));
         if (tErr) throw tErr;
 
         // Deduct sender balance
-        const { error: bErr } = await supabase
-          .from("balances")
-          .update({
+        const { error: bErr } = await supabase.from("balances").update({
             checking: newChecking,
             updated_at: new Date().toISOString(),
           })
@@ -933,9 +924,7 @@ export const useStore = create<BankState>((set, get) => {
               createdAt: new Date().toISOString(),
               status: TransactionStatus.COMPLETED,
             };
-            await supabase
-              .from("transactions")
-              .insert(mapTransactionToDb(txReceived));
+            const {error: txErr} = await supabase.from("transactions").insert(mapTransactionToDb(txReceived)); if (txErr) throw txErr;
 
             // Publish inward transfer notification
             const incomingNotifId =
@@ -999,7 +988,7 @@ export const useStore = create<BankState>((set, get) => {
           })
           .eq("uid", u.uid);
 
-        await supabase.from("transactions").insert(mapTransactionToDb(newTx));
+        const {error: txErr} = await supabase.from("transactions").insert(mapTransactionToDb(newTx)); if (txErr) throw txErr;
 
         const notifId =
           "notif_dep_" + Math.random().toString(36).substring(2, 10);
@@ -1014,7 +1003,7 @@ export const useStore = create<BankState>((set, get) => {
         };
         await supabase.from("notifications").insert(mapNotificationToDb(notif));
       } catch (e) {
-        handleSupabaseError(e, OperationType.WRITE, `balances/${u.uid}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1052,7 +1041,7 @@ export const useStore = create<BankState>((set, get) => {
         await supabase.from("cards").insert(mapCardToDb(newCard));
       } catch (e) {
         set({ cards: get().cards.filter((c) => c.id !== newCard.id) });
-        handleSupabaseError(e, OperationType.CREATE, `cards/${newCard.id}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1063,7 +1052,7 @@ export const useStore = create<BankState>((set, get) => {
         await supabase.from("cards").delete().eq("id", cardId);
       } catch (e) {
         set({ cards: currentCards });
-        handleSupabaseError(e, OperationType.DELETE, `cards/${cardId}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1085,7 +1074,7 @@ export const useStore = create<BankState>((set, get) => {
           .eq("id", cardId);
       } catch (e) {
         set({ cards: currentCards });
-        handleSupabaseError(e, OperationType.UPDATE, `cards/${cardId}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1103,7 +1092,7 @@ export const useStore = create<BankState>((set, get) => {
           .eq("id", cardId);
       } catch (e) {
         set({ cards: currentCards });
-        handleSupabaseError(e, OperationType.UPDATE, `cards/${cardId}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1182,11 +1171,9 @@ export const useStore = create<BankState>((set, get) => {
             updated_at: new Date().toISOString(),
           })
           .eq("uid", u.uid);
-        await supabase
-          .from("transactions")
-          .insert(mapTransactionToDb(customTx));
+        const {error: txErr} = await supabase.from("transactions").insert(mapTransactionToDb(customTx)); if (txErr) throw txErr;
       } catch (e) {
-        handleSupabaseError(e, OperationType.UPDATE, `savings_goals/${goalId}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1206,7 +1193,7 @@ export const useStore = create<BankState>((set, get) => {
           })
           .eq("id", goalId);
       } catch (e) {
-        handleSupabaseError(e, OperationType.UPDATE, `savings_goals/${goalId}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1214,7 +1201,7 @@ export const useStore = create<BankState>((set, get) => {
       // Optimistic local update
       set((state) => ({
         notifications: state.notifications.map((n) =>
-          n.id === id ? { ...n, isRead: true } : n
+          n.id === id ? { ...n, isRead: true } : n,
         ),
       }));
       try {
@@ -1223,7 +1210,7 @@ export const useStore = create<BankState>((set, get) => {
           .update({ is_read: true })
           .eq("id", id);
       } catch (e) {
-        handleSupabaseError(e, OperationType.UPDATE, `notifications/${id}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1252,7 +1239,7 @@ export const useStore = create<BankState>((set, get) => {
           })
           .eq("id", u.uid);
       } catch (e) {
-        handleSupabaseError(e, OperationType.UPDATE, `users/${u.uid}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1301,7 +1288,7 @@ export const useStore = create<BankState>((set, get) => {
             .eq("uid", s.uid);
         }
       } catch (e) {
-        handleSupabaseError(e, OperationType.UPDATE, `settings/${s.uid}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1313,7 +1300,7 @@ export const useStore = create<BankState>((set, get) => {
         if (error) console.error("Admin Load Users error:", error);
         let list = data ? data.map(mapUserFromDb) : [];
         if (list.length === 0 && get().user) {
-           list = [get().user];
+          list = [get().user];
         }
         set({ usersList: list });
       } catch (e) {
@@ -1337,16 +1324,16 @@ export const useStore = create<BankState>((set, get) => {
       };
 
       try {
-        await supabase
+        const { error: balErr } = await supabase
           .from("balances")
           .update({
             checking,
             savings,
             updated_at: new Date().toISOString(),
-          })
-          .eq("uid", userId);
+          }).eq("uid", userId); 
+        if (balErr) throw balErr;
 
-        await supabase.from("admin_logs").insert(mapLogToDb(log));
+        const {error: logErr} = await supabase.from("admin_logs").insert(mapLogToDb(log)); if (logErr) throw logErr;
         await get().adminLoadUsers();
 
         const notifId =
@@ -1364,7 +1351,7 @@ export const useStore = create<BankState>((set, get) => {
           .from("notifications")
           .insert(mapNotificationToDb(notifObj));
       } catch (e) {
-        handleSupabaseError(e, OperationType.UPDATE, `balances/${userId}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1400,12 +1387,10 @@ export const useStore = create<BankState>((set, get) => {
       };
 
       try {
-        await supabase
-          .from("transactions")
-          .insert(mapTransactionToDb(transaction));
-        await supabase.from("admin_logs").insert(mapLogToDb(log));
+        const {error: txErr} = await supabase.from("transactions").insert(mapTransactionToDb(transaction)); if (txErr) throw txErr;
+        const {error: logErr} = await supabase.from("admin_logs").insert(mapLogToDb(log)); if (logErr) throw logErr;
       } catch (e) {
-        handleSupabaseError(e, OperationType.CREATE, `transactions/${txId}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1422,14 +1407,14 @@ export const useStore = create<BankState>((set, get) => {
       };
 
       try {
-        await supabase
+        const { error: usrErr } = await supabase
           .from("users")
-          .update({ is_verified: isVerified })
-          .eq("id", userId);
-        await supabase.from("admin_logs").insert(mapLogToDb(log));
+          .update({ is_verified: isVerified }).eq("id", userId); 
+        if (usrErr) throw usrErr;
+        const {error: logErr} = await supabase.from("admin_logs").insert(mapLogToDb(log)); if (logErr) throw logErr;
         await get().adminLoadUsers();
       } catch (e) {
-        handleSupabaseError(e, OperationType.UPDATE, `users/${userId}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1446,14 +1431,11 @@ export const useStore = create<BankState>((set, get) => {
       };
 
       try {
-        await supabase
-          .from("users")
-          .update({ is_frozen: frozen })
-          .eq("id", userId);
-        await supabase.from("admin_logs").insert(mapLogToDb(log));
+        const {error: usrErr} = await supabase.from("users").update({ is_frozen: frozen }).eq("id", userId); if (usrErr) throw usrErr;
+        const {error: logErr} = await supabase.from("admin_logs").insert(mapLogToDb(log)); if (logErr) throw logErr;
         await get().adminLoadUsers();
       } catch (e) {
-        handleSupabaseError(e, OperationType.UPDATE, `users/${userId}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1470,14 +1452,11 @@ export const useStore = create<BankState>((set, get) => {
       };
 
       try {
-        await supabase
-          .from("users")
-          .update({ is_suspended: suspended })
-          .eq("id", userId);
-        await supabase.from("admin_logs").insert(mapLogToDb(log));
+        const {error: usrErr} = await supabase.from("users").update({ is_suspended: suspended }).eq("id", userId); if (usrErr) throw usrErr;
+        const {error: logErr} = await supabase.from("admin_logs").insert(mapLogToDb(log)); if (logErr) throw logErr;
         await get().adminLoadUsers();
       } catch (e) {
-        handleSupabaseError(e, OperationType.UPDATE, `users/${userId}`);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1508,7 +1487,7 @@ export const useStore = create<BankState>((set, get) => {
 
       try {
         await supabase.from("notifications").insert(mapNotificationToDb(notif));
-        await supabase.from("admin_logs").insert(mapLogToDb(log));
+        const {error: logErr} = await supabase.from("admin_logs").insert(mapLogToDb(log)); if (logErr) throw logErr;
       } catch (e) {
         handleSupabaseError(
           e,
@@ -1533,11 +1512,13 @@ export const useStore = create<BankState>((set, get) => {
 
       try {
         // Fetch all user IDs
-        const { data: users, error } = await supabase.from("users").select("id");
+        const { data: users, error } = await supabase
+          .from("users")
+          .select("id");
         if (error) throw error;
-        
+
         if (users && users.length > 0) {
-          const notifications = users.map(u => ({
+          const notifications = users.map((u) => ({
             id: "notif_adm_" + Math.random().toString(36).substring(2, 10),
             user_id: u.id,
             title,
@@ -1546,12 +1527,12 @@ export const useStore = create<BankState>((set, get) => {
             type,
             created_at: new Date().toISOString(),
           }));
-          
+
           await supabase.from("notifications").insert(notifications);
         }
-        await supabase.from("admin_logs").insert(mapLogToDb(log));
+        const {error: logErr} = await supabase.from("admin_logs").insert(mapLogToDb(log)); if (logErr) throw logErr;
       } catch (e) {
-        console.error("Failed to broadcast notification", e);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
@@ -1559,16 +1540,20 @@ export const useStore = create<BankState>((set, get) => {
       const { user } = get();
       if (!user) return;
       try {
-        const { data, error } = await supabase.from('support_tickets').select('*').eq('user_id', user.uid).order('created_at', { ascending: false });
+        const { data, error } = await supabase
+          .from("support_tickets")
+          .select("*")
+          .eq("user_id", user.uid)
+          .order("created_at", { ascending: false });
         if (error) throw error;
         if (data) {
           set({ tickets: data.map(mapTicketFromDb) });
         }
       } catch (e) {
-        console.error('Failed to load tickets', e);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
-    
+
     createTicket: async (subject, description, category, documentBase64) => {
       const { user } = get();
       if (!user) return;
@@ -1579,30 +1564,38 @@ export const useStore = create<BankState>((set, get) => {
           description,
           category,
           document_base64: documentBase64 || null,
-          status: 'open',
-          created_at: new Date().toISOString()
+          status: "open",
+          created_at: new Date().toISOString(),
         };
-        const { error } = await supabase.from('support_tickets').insert(payload);
+        const { error } = await supabase
+          .from("support_tickets")
+          .insert(payload);
         if (error) throw error;
         await get().loadTickets();
       } catch (e) {
-        console.error('Failed to create ticket', e);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
     adminLoadTickets: async () => {
       try {
-        const { data, error } = await supabase.from('support_tickets').select('*').order('created_at', { ascending: false });
+        const { data, error } = await supabase
+          .from("support_tickets")
+          .select("*")
+          .order("created_at", { ascending: false });
         if (error) throw error;
         if (data) set({ adminTickets: data.map(mapTicketFromDb) });
       } catch (e) {
-        console.error('Failed to load admin tickets', e);
+        console.error("Failed to load admin tickets", e);
       }
     },
 
     adminUpdateTicketStatus: async (ticketId, status) => {
       try {
-        const { error } = await supabase.from('support_tickets').update({ status }).eq('id', ticketId);
+        const { error } = await supabase
+          .from("support_tickets")
+          .update({ status })
+          .eq("id", ticketId);
         if (error) throw error;
         await get().adminLoadTickets();
         const logId = "log_" + Math.random().toString(36).substring(2, 10);
@@ -1615,9 +1608,9 @@ export const useStore = create<BankState>((set, get) => {
           details: `Updated ticket ${ticketId} to status ${status}`,
           timestamp: new Date().toISOString(),
         };
-        await supabase.from("admin_logs").insert(mapLogToDb(log));
+        const {error: logErr} = await supabase.from("admin_logs").insert(mapLogToDb(log)); if (logErr) throw logErr;
       } catch (e) {
-        console.error('Failed to update ticket', e);
+        toast.error(e.message || "Operation failed"); throw e;
       }
     },
 
