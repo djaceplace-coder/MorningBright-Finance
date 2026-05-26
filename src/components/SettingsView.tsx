@@ -353,6 +353,28 @@ export function SettingsView() {
                 </div>
               </div>
 
+              {/* CARD PIN MANAGEMENT */}
+              <div className="flex flex-col space-y-3 p-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 opacity-75 dark:bg-slate-950 transition-all">
+                <div className="flex justify-between items-center opacity-50">
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-1.5 text-xs text-slate-900 dark:text-white font-semibold">
+                      <Lock className="w-4 h-4 text-emerald-500" />
+                      <span>Card PIN Management</span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 block leading-normal">
+                      Setup or reset your Virtual and Physical Card PINs. (Admin Approval Required)
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    disabled
+                    className="h-8 px-3 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-xs font-bold cursor-not-allowed"
+                  >
+                    Manage
+                  </button>
+                </div>
+              </div>
+
             </div>
           </div>
 

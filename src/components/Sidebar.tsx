@@ -36,7 +36,6 @@ export function Sidebar({ currentTab, onChangeTab }: SidebarProps) {
   const menuItems = [
     { id: 'home', label: 'Home', icon: <Home size={18} /> },
     { id: 'transfers', label: 'Transfers', icon: <ArrowLeftRight size={18} /> },
-    { id: 'bills', label: 'Bill Payments', icon: <Sparkles size={18} /> },
     { id: 'cards', label: 'Cards', icon: <CreditCard size={18} /> },
     { id: 'savings', label: 'Savings', icon: <Target size={18} /> },
     { id: 'support', label: 'Support', icon: <ShieldAlert size={18} /> },

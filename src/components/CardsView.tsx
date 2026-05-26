@@ -19,7 +19,8 @@ import {
   PlusCircle,
   AlertCircle,
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -30,6 +31,7 @@ export function CardsView() {
   const [newCardName, setNewCardName] = useState('');
   const [newCardType, setNewCardType] = useState<'ebony' | 'emerald' | 'platinum'>('ebony');
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [cardTab, setCardTab] = useState<'virtual' | 'physical'>('virtual');
 
   // States for limits
   const [tempLimit, setTempLimit] = useState<number>(3000);
@@ -81,268 +83,218 @@ export function CardsView() {
         <div>
           <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono tracking-widest uppercase font-bold">CARDS MATRIX</span>
           <h2 className="text-2xl font-sans tracking-tight font-medium text-slate-900 dark:text-white mt-1">
-            Hi, {user?.lastName || 'Client'} - Virtual Touch Cards
+            Hi, {user?.lastName || 'Client'} - Card Operations
           </h2>
         </div>
 
-        <button 
-          onClick={() => setCreateModalOpen(true)}
-          className="h-10 px-4 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-black font-semibold text-xs flex items-center space-x-1.5 hover:scale-105 active:scale-95 transition-transform cursor-pointer"
-        >
-          <Plus size={14} />
-          <span>Spawn Virtual Card</span>
-        </button>
+        <div className="flex bg-slate-200 dark:bg-slate-900 rounded-lg p-1">
+          <button 
+            onClick={() => setCardTab('virtual')} 
+            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${cardTab === 'virtual' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+          >
+            Virtual 
+          </button>
+          <button 
+            onClick={() => setCardTab('physical')} 
+            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${cardTab === 'physical' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+          >
+            Physical
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* LEFT COLUMN: CARDS CAROUSEL */}
-        <div className="lg:col-span-5 space-y-6">
-          <div className="flex justify-between items-center px-1">
-            <span className="text-[10px] text-slate-505 dark:text-slate-500 font-mono uppercase tracking-widest block font-bold">Your Active Plastic Collection</span>
-            <button 
-              onClick={() => setShowCardNumbers(!showCardNumbers)}
-              className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white flex items-center space-x-1 font-mono cursor-pointer"
-            >
-              {showCardNumbers ? <EyeOff size={14} /> : <Eye size={14} />}
-              <span className="text-[10px]">{showCardNumbers ? 'Mask Card' : 'Unmask Card'}</span>
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {cards.length === 0 ? (
-              <div className="p-12 border border-dashed border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/40 text-center text-xs text-slate-500 italic rounded-2xl py-14">
-                <CreditCard className="w-8 h-8 mx-auto text-slate-400 mb-2" />
-                <span className="block text-slate-900 dark:text-white font-medium">No virtual cards created yet</span>
-                <span className="block text-[10px] text-slate-400 font-mono mt-0.5">Initialize a customizable Visa below</span>
-              </div>
-            ) : (
-              cards.map((card) => {
-                const isSelected = activeCard && activeCard.id === card.id;
-                
-                // Set skin colors
-                let cardGradient = "from-slate-900 via-slate-950 to-slate-900 border-white/10";
-                let textSkin = "text-white";
-                let labelSkin = "EBONY METALLIC";
-                let accentCircle = "bg-emerald-400/10";
-
-                if (card.cardType === 'emerald') {
-                  cardGradient = "from-emerald-950 via-slate-950 to-emerald-950 border-emerald-500/20";
-                  textSkin = "text-emerald-400";
-                  labelSkin = "EMERALD GOLD";
-                  accentCircle = "bg-emerald-500/20";
-                } else if (card.cardType === 'platinum') {
-                  cardGradient = "from-slate-900 via-zinc-950 to-slate-900 border-white/5 opacity-80 border-dashed";
-                  textSkin = "text-slate-200";
-                  labelSkin = "PLATINUM PREMIUM";
-                  accentCircle = "bg-white/5";
-                }
-
-                return (
-                  <motion.div
-                    key={card.id}
-                    onClick={() => handleCardClick(card.id, card.spendingLimit)}
-                    className={`relative aspect-[1.586/1] w-full rounded-2xl border p-6 flex flex-col justify-between shadow-xl cursor-pointer transition-all overflow-hidden select-none ${cardGradient} ${
-                      isSelected ? 'ring-2 ring-emerald-500/50 scale-[1.01]' : 'opacity-60 hover:opacity-100'
-                    }`}
-                  >
-                    <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-500/5 blur-2xl pointer-events-none" />
-
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <span className={`text-[9px] font-mono tracking-widest ${textSkin} block font-bold`}>{labelSkin}</span>
-                        <span className="block text-xs font-semibold text-slate-200 mt-1">{card.cardholderName}</span>
-                      </div>
-                      
-                      {card.isFrozen ? (
-                        <div className="px-2 py-0.5 rounded bg-red-500/10 border border-red-500/20 text-red-400 text-[8px] font-mono uppercase tracking-widest flex items-center space-x-1">
-                          <Lock size={10} />
-                          <span>Frozen</span>
-                        </div>
-                      ) : (
-                        <div className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[8px] font-mono uppercase tracking-widest flex items-center space-x-1">
-                          <Unlock size={10} />
-                          <span>Active</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="text-lg font-mono tracking-widest text-slate-100 my-4">
-                      {showCardNumbers ? card.cardNumber : `••••  ••••  ••••  ${card.cardNumber.slice(-4)}`}
-                    </div>
-
-                    <div className="flex justify-between items-end">
-                      <div className="flex space-x-6 text-[9px] font-mono text-slate-500">
-                        <div>
-                          <span className="block uppercase text-[7px] text-slate-600">EXPIRY</span>
-                          <span className="text-slate-300 font-semibold">{card.expiryDate}</span>
-                        </div>
-                        <div>
-                          <span className="block uppercase text-[7px] text-slate-600">CVV PROTECT</span>
-                          <span className="text-slate-300 font-semibold">{showCardNumbers ? card.cvv : '•••'}</span>
-                        </div>
-                      </div>
-
-                      <div className="w-9 h-6 rounded bg-white/10 flex items-center justify-center">
-                        <span className="text-[7px] font-bold text-slate-400 font-mono tracking-tight">VISA</span>
-                      </div>
-                    </div>
-
-                  </motion.div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: DETAILED SETTINGS AND HISTORIES FOR THE SELECTED CARD */}
-        <div className="lg:col-span-1" />
-
-        <div className="lg:col-span-6 space-y-6">
-          {activeCard ? (
-            <div className="space-y-6">
-              
-              {/* INTERACTIVE ACTIONS BOX */}
-              <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-5 transition-all text-slate-800 dark:text-slate-200">
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Card Security Lock</h3>
-                  <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Instant suspension triggers</p>
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950">
-                  <div className="space-y-1">
-                    <span className="text-xs text-slate-905 dark:text-white block font-medium">Temporarily Freeze Card</span>
-                    <span className="text-[10px] text-slate-500 block leading-normal">
-                      Blocks all cash withdrawals and terminal authorizations immediately.
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => toggleCardFrozen(activeCard.id)}
-                    className={`h-9 px-4 rounded-lg font-mono text-[10px] font-bold uppercase tracking-wider flex items-center space-x-1.5 transition-all cursor-pointer ${
-                      activeCard.isFrozen 
-                        ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/10' 
-                        : 'border border-red-500/20 text-red-500 hover:bg-red-500/5'
-                    }`}
-                  >
-                    {activeCard.isFrozen ? (
-                      <>
-                        <Unlock size={12} />
-                        <span>Unfreeze Account</span>
-                      </>
-                    ) : (
-                      <>
-                        <Lock size={12} />
-                        <span>Freeze Card</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* CARD LIMITS SLIDERS */}
-              <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-5 transition-all">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Digital Spending Limits</h3>
-                    <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Cumulative monthly allocation</p>
-                  </div>
-                  <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/5 px-2 py-0.5 rounded">
-                    ${tempLimit.toLocaleString()} Daily Limit
-                  </span>
-                </div>
-
-                <div className="space-y-4">
-                  <input 
-                    type="range" 
-                    min="500" 
-                    max="10000" 
-                    step="500"
-                    value={tempLimit}
-                    onChange={(e) => setTempLimit(parseInt(e.target.value))}
-                    className="w-full accent-emerald-500"
-                  />
-
-                  <div className="flex justify-between text-[10px] text-slate-400 font-mono">
-                    <span>$500 Min</span>
-                    <span>$10,000 Max Cap</span>
-                  </div>
-
+      {cardTab === 'virtual' ? (
+        <div className="animate-in fade-in zoom-in-95 duration-300">
+          {cards.length === 0 ? (
+            <div className="max-w-4xl mx-auto space-y-8 pb-24">
+              <div className="p-8 md:p-12 border border-slate-200 dark:border-white/10 rounded-3xl bg-white dark:bg-slate-900/60 shadow-xl overflow-hidden relative flex flex-col md:flex-row items-center gap-12 text-center text-slate-800 dark:text-slate-200">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
+                <div className="flex-1 space-y-6 z-10 w-full flex flex-col items-center justify-center py-12">
+                  <CreditCard className="w-16 h-16 text-emerald-500/50 mb-2" />
+                  <h3 className="text-3xl font-bold font-sans text-slate-900 dark:text-white leading-tight">Virtual Card Terminal</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
+                    Instantly provision secure, disposable, or recurring digital payment cards. Protect your primary checking balances with isolated spending limits.
+                  </p>
                   <button 
-                    onClick={handleSaveLimits}
-                    className="w-full h-11 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-black hover:bg-slate-900 text-xs font-bold transition-all flex items-center justify-center space-x-1 uppercase tracking-wider cursor-pointer"
+                    onClick={() => setCreateModalOpen(true)}
+                    className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-900 dark:bg-white px-6 font-bold text-white dark:text-black shadow-lg transition-transform hover:scale-105 active:scale-95 text-sm uppercase tracking-widest mt-4"
                   >
-                    <Sliders size={13} />
-                    <span>Apply Limit Bounds</span>
+                    Initialize First Card
                   </button>
                 </div>
               </div>
-
-              {/* CARD LINKED IDENTITY & DESTROY */}
-              <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-4 transition-all text-slate-800 dark:text-slate-200">
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Linked Identity Setup</h3>
-                  <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Billing & Management</p>
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 space-y-1">
-                    <span className="text-[9px] font-mono text-slate-500 block uppercase">Billing Address</span>
-                    <span className="block font-medium text-slate-900 dark:text-white">123 Financial District, Suite 500, New York, NY 10004</span>
-                  </div>
-                  <div className="p-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 space-y-1">
-                    <span className="text-[9px] font-mono text-slate-500 block uppercase">Linked Phone Phone</span>
-                    <span className="block font-medium text-slate-900 dark:text-white">+1 (555) 019-9021</span>
-                  </div>
-                </div>
-                <button
-                  onClick={async () => {
-                     if (window.confirm("Are you sure you want to permanently delete this virtual card?")) {
-                       await useStore.getState().deleteCard(activeCard.id);
-                       setSelectedCardId(null);
-                     }
-                  }}
-                  className="w-full h-11 rounded-xl border border-red-500/20 text-red-500 hover:bg-red-500/5 text-xs font-bold flex items-center justify-center space-x-1.5 uppercase transition-colors cursor-pointer"
-                >
-                  <X size={14} />
-                  <span>Destroy Identity Card</span>
-                </button>
-              </div>
-
-              {/* CARD TRANSACTIONS TRACKING */}
-              <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-4 transition-all text-slate-900 dark:text-white">
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Filtered Card Wires</h3>
-                  <p className="text-[10px] text-slate-400 font-mono uppercase mt-0.5">Transaction events for selected card</p>
-                </div>
-
-                <div className="space-y-3 pt-2">
-                  {filteredCardTransactions.length === 0 ? (
-                    <div className="py-6 text-center text-xs text-slate-500 italic border border-dashed border-slate-200 dark:border-white/10 rounded-xl">
-                      No card activities logged. Initiate checking wires to populate indices.
-                    </div>
-                  ) : (
-                    filteredCardTransactions.map((tx) => (
-                      <div key={tx.id} className="flex justify-between items-center text-xs pb-3 border-b border-slate-100 dark:border-white/5 last:border-none last:pb-0">
-                        <div>
-                          <span className="block text-slate-955 dark:text-slate-100 font-bold">{tx.merchant}</span>
-                          <span className="block text-[9px] text-slate-400 font-mono mt-0.5">{new Date(tx.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300">-${tx.amount.toFixed(2)}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
             </div>
           ) : (
-            <div className="h-full flex items-center justify-center text-center text-xs text-slate-550 italic p-12 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
-              Select or generate a virtual touch card terminal to reveal diagnostic configuration parameters.
+            <div className="max-w-7xl mx-auto space-y-8 pb-24">
+              {activeCard && (
+                <div className="p-8 md:p-12 border border-slate-200 dark:border-white/10 rounded-3xl bg-white dark:bg-slate-900/60 shadow-xl overflow-hidden relative flex flex-col md:flex-row items-center gap-12">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
+                  
+                  {/* Left Column: Management & Stats */}
+                  <div className="flex-1 space-y-8 z-10 w-full">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] uppercase font-bold tracking-widest rounded-full border border-emerald-500/20">Active Virtual</span>
+                        {activeCard.isFrozen && <span className="px-3 py-1 bg-red-500/10 text-red-500 font-mono text-[10px] uppercase font-bold tracking-widest rounded-full border border-red-500/20">Frozen</span>}
+                      </div>
+                      <h3 className="text-3xl font-bold font-sans text-slate-900 dark:text-white leading-tight">{activeCard.cardholderName || 'Virtual Account'}</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-md mt-2">
+                        Your secure digital endpoint. Adjust limits instantly or freeze to prevent unauthorized transactions.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Limit Control */}
+                      <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/50 space-y-3">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-mono text-slate-500 font-bold uppercase tracking-widest">Monthly Limit</span>
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">${tempLimit.toLocaleString()}</span>
+                        </div>
+                        <input type="range" min="500" max="10000" step="500" value={tempLimit} onChange={(e) => setTempLimit(parseInt(e.target.value))} onMouseUp={handleSaveLimits} onTouchEnd={handleSaveLimits} className="w-full accent-emerald-500" />
+                      </div>
+
+                      {/* Quick Actions */}
+                      <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/50 flex flex-col justify-center space-y-2">
+                        <button onClick={() => toggleCardFrozen(activeCard.id)} className={`w-full h-8 rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-1.5 transition-colors ${activeCard.isFrozen ? 'bg-emerald-500 text-white' : 'bg-red-500/10 text-red-500 hover:bg-red-500/20'}`}>
+                          {activeCard.isFrozen ? <><Unlock size={12}/>Unfreeze</> : <><Lock size={12}/>Freeze</>}
+                        </button>
+                        <button onClick={async () => { if(window.confirm("Delete virtual card permanently?")) { await useStore.getState().deleteCard(activeCard.id); setSelectedCardId(null); } }} className="w-full h-8 rounded-lg bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-300 dark:hover:bg-white/10 transition-colors">
+                          Destroy Card
+                        </button>
+                      </div>
+                    </div>
+
+                    <button onClick={() => setCreateModalOpen(true)} className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 capitalize">
+                      <PlusCircle size={14} /> Provision another virtual card
+                    </button>
+                  </div>
+
+                  {/* Right Column: The Grand Card & Selector */}
+                  <div className="w-full max-w-[340px] shrink-0 z-10 relative flex flex-col items-center">
+                    
+                    {/* The Rendered Grand Card */}
+                    <div className={`aspect-[1.586/1] w-full rounded-2xl border p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden transition-all select-none
+                      ${activeCard.cardType === 'emerald' ? 'bg-gradient-to-br from-emerald-900 via-slate-900 to-emerald-950 border-emerald-500/30' : 
+                        activeCard.cardType === 'platinum' ? 'bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 border-white/20' : 
+                        'bg-gradient-to-br from-slate-900 via-black to-slate-900 border-white/10'}
+                    `}>
+                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent skew-x-12 translate-x-[-100%] animate-[shimmer_3s_infinite]" />
+                      <div className="flex justify-between items-start z-10">
+                         <span className={`text-[10px] font-mono tracking-widest block font-bold ${activeCard.cardType === 'emerald' ? 'text-emerald-400' : 'text-slate-300'}`}>
+                           {activeCard.cardType === 'emerald' ? 'EMERALD VIRTUAL' : activeCard.cardType === 'platinum' ? 'PLATINUM VIRTUAL' : 'EBONY VIRTUAL'}
+                         </span>
+                         <button onClick={() => setShowCardNumbers(!showCardNumbers)} className="w-6 h-6 rounded bg-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer">
+                           {showCardNumbers ? <EyeOff size={10} /> : <Eye size={10} />}
+                         </button>
+                      </div>
+                      <div className="text-xl font-mono tracking-widest text-white my-4 text-center z-10 drop-shadow-md">
+                        {showCardNumbers ? activeCard.cardNumber : `••••  ••••  ••••  ${activeCard.cardNumber.slice(-4)}`}
+                      </div>
+                      <div className="flex justify-between items-end z-10">
+                        <div className="flex space-x-6 text-[9px] font-mono p-2 rounded-lg bg-black/20 backdrop-blur-md border border-white/5">
+                          <div>
+                            <span className="block uppercase text-[7px] text-slate-400">EXPIRY</span>
+                            <span className="text-white font-semibold">{activeCard.expiryDate}</span>
+                          </div>
+                          <div>
+                            <span className="block uppercase text-[7px] text-slate-400">CVV</span>
+                            <span className="text-white font-semibold">{showCardNumbers ? activeCard.cvv : '•••'}</span>
+                          </div>
+                        </div>
+                        <span className="text-[12px] font-bold text-slate-100 font-mono tracking-tight">VISA</span>
+                      </div>
+                      <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-emerald-500/20 blur-3xl rounded-full mix-blend-screen pointer-events-none" />
+                    </div>
+
+                    {/* Card Selector Horizontal List */}
+                    {cards.length > 1 && (
+                      <div className="w-full flex overflow-x-auto gap-2 p-2 mt-6 pb-2 scrollbar-hide">
+                         {cards.map(card => (
+                           <button 
+                             key={card.id}
+                             onClick={() => handleCardClick(card.id, card.spendingLimit)}
+                             className={`shrink-0 w-16 h-10 rounded-lg border flex flex-col justify-center items-center overflow-hidden relative cursor-pointer
+                               ${card.id === selectedCardId ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200 dark:border-white/10 opacity-60 hover:opacity-100'}
+                               ${card.cardType === 'emerald' ? 'bg-emerald-950/50' : card.cardType === 'platinum' ? 'bg-slate-800' : 'bg-slate-900'}`}
+                           >
+                             <span className="text-[7px] font-mono text-white tracking-widest">{card.cardNumber.slice(-4)}</span>
+                           </button>
+                         ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
+      ) : (
+        <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-300 pb-24">
+          <div className="p-8 md:p-12 border border-slate-200 dark:border-white/10 rounded-3xl bg-white dark:bg-slate-900/60 shadow-xl overflow-hidden relative flex flex-col md:flex-row items-center gap-12">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
+            
+            <div className="flex-1 space-y-6 z-10">
+              <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] uppercase font-bold tracking-widest rounded-full border border-emerald-500/20">Available Now</span>
+              <h3 className="text-3xl font-bold font-sans text-slate-900 dark:text-white leading-tight">The Obsidian Physical Card</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-md">
+                Experience borderless spending with our premium metal crafted Obsidian Card. Provides direct linkage to your checking balances for ATM withdrawals worldwide.
+              </p>
+              
+              <ul className="space-y-3 mb-6">
+                {['Zero foreign transaction fees', 'Complimentary ATM withdrawals globally', 'Enhanced physical EVM chip security', 'Tap-to-pay structural NFC integration'].map((benefit, i) => (
+                  <li key={i} className="flex items-center space-x-3 text-xs text-slate-700 dark:text-slate-300">
+                    <CheckCircle2 size={16} className="text-emerald-500" />
+                    <span>{benefit}</span>
+                  </li>
+                ))}
+              </ul>
 
-      </div>
+              <div className="pt-4 border-t border-slate-100 dark:border-white/5 space-y-4">
+                <div>
+                  <span className="block text-slate-900 dark:text-white font-bold mb-1">Secure Delivery & Activation</span>
+                  <span className="block text-xs text-slate-500">To maintain security logistics protocols, your physical card requires a structural activation deposit to process printing and secure courier dispatch.</span>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                   <div className="flex flex-col">
+                     <span className="text-[10px] font-mono text-slate-500 uppercase">Activation Fee</span>
+                     <span className="text-lg font-bold text-slate-900 dark:text-white">$500.00</span>
+                   </div>
+                </div>
+
+                <a 
+                  href="#support" 
+                  onClick={(e) => { e.preventDefault(); useStore.setState({ activeTab: 'support' })}}
+                  className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-6 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 text-sm"
+                >
+                   Complete Activation via Support
+                </a>
+              </div>
+            </div>
+
+            <div className="w-full max-w-[280px] shrink-0 z-10 relative">
+               <div className="aspect-[1.586/1] w-full rounded-2xl bg-gradient-to-br from-slate-900 via-zinc-900 to-black border border-white/10 p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden transform -rotate-12 transition-transform hover:rotate-[-5deg]">
+                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent skew-x-12 translate-x-[-100%] animate-[shimmer_3s_infinite]" />
+                 <div className="flex justify-between items-start">
+                   <span className="text-[10px] font-mono tracking-widest text-slate-400 block font-bold">OBSIDIAN METAL</span>
+                   <div className="w-8 h-6 rounded bg-yellow-600/30 border border-yellow-600/50 flex items-center justify-center overflow-hidden">
+                     <div className="w-full h-px bg-yellow-600/40" />
+                     <div className="w-px h-full bg-yellow-600/40 absolute" />
+                   </div>
+                 </div>
+                 <div className="text-lg font-mono tracking-widest text-slate-100 my-4">
+                   ••••  ••••  ••••  ••••
+                 </div>
+                 <div className="flex justify-between items-end">
+                   <span className="block text-xs font-semibold text-slate-300">{user?.first_name ? `${user.first_name} ${user.last_name}`.toUpperCase() : 'VALUED CLIENT'}</span>
+                   <span className="text-[10px] font-bold text-slate-100 font-mono tracking-tight">VISA</span>
+                 </div>
+               </div>
+               <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-emerald-500/30 blur-3xl rounded-full mix-blend-screen" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* NEW CARD SPAWNING MODAL */}
       <AnimatePresence>

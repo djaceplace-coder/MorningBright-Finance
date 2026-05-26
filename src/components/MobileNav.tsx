@@ -27,7 +27,7 @@ export function MobileNav({ currentTab, onChangeTab }: MobileNavProps) {
   const menuItems = [
     { id: 'home', label: 'Home', icon: <Home size={20} /> },
     { id: 'transfers', label: 'Transfers', icon: <ArrowLeftRight size={20} /> },
-    { id: 'bills', label: 'Bills', icon: <Sparkles size={20} /> },
+    { id: 'cards', label: 'Cards', icon: <CreditCard size={20} /> },
     { id: 'support', label: 'Support', icon: <ShieldAlert size={20} /> },
     { id: 'settings', label: 'Profile', icon: <Settings size={20} /> },
   ];
