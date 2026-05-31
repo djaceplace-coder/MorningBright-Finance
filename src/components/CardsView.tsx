@@ -103,145 +103,26 @@ export function CardsView() {
         </div>
       </div>
 
-      {cardTab === 'virtual' ? (
-        <div className="animate-in fade-in zoom-in-95 duration-300">
-          {cards.length === 0 ? (
-            <div className="max-w-4xl mx-auto space-y-8 pb-24">
-              <div className="p-8 md:p-12 border border-slate-200 dark:border-white/10 rounded-3xl bg-white dark:bg-slate-900/60 shadow-xl overflow-hidden relative flex flex-col md:flex-row items-center gap-12 text-center text-slate-800 dark:text-slate-200">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
-                <div className="flex-1 space-y-6 z-10 w-full flex flex-col items-center justify-center py-12">
-                  <CreditCard className="w-16 h-16 text-emerald-500/50 mb-2" />
-                  <h3 className="text-3xl font-bold font-sans text-slate-900 dark:text-white leading-tight">Virtual Card Terminal</h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
-                    Instantly provision secure, disposable, or recurring digital payment cards. Protect your primary checking balances with isolated spending limits.
-                  </p>
-                  <button 
-                    onClick={() => setCreateModalOpen(true)}
-                    className="inline-flex h-12 items-center justify-center rounded-xl bg-slate-900 dark:bg-white px-6 font-bold text-white dark:text-black shadow-lg transition-transform hover:scale-105 active:scale-95 text-sm uppercase tracking-widest mt-4"
-                  >
-                    Initialize First Card
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="max-w-7xl mx-auto space-y-8 pb-24">
-              {activeCard && (
-                <div className="p-8 md:p-12 border border-slate-200 dark:border-white/10 rounded-3xl bg-white dark:bg-slate-900/60 shadow-xl overflow-hidden relative flex flex-col md:flex-row items-center gap-12">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
-                  
-                  {/* Left Column: Management & Stats */}
-                  <div className="flex-1 space-y-8 z-10 w-full">
-                    <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] uppercase font-bold tracking-widest rounded-full border border-emerald-500/20">Active Virtual</span>
-                        {activeCard.isFrozen && <span className="px-3 py-1 bg-red-500/10 text-red-500 font-mono text-[10px] uppercase font-bold tracking-widest rounded-full border border-red-500/20">Frozen</span>}
-                      </div>
-                      <h3 className="text-3xl font-bold font-sans text-slate-900 dark:text-white leading-tight">{activeCard.cardholderName || 'Virtual Account'}</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-md mt-2">
-                        Your secure digital endpoint. Adjust limits instantly or freeze to prevent unauthorized transactions.
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Limit Control */}
-                      <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/50 space-y-3">
-                        <div className="flex justify-between items-center text-xs">
-                          <span className="font-mono text-slate-500 font-bold uppercase tracking-widest">Monthly Limit</span>
-                          <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">${tempLimit.toLocaleString()}</span>
-                        </div>
-                        <input type="range" min="500" max="10000" step="500" value={tempLimit} onChange={(e) => setTempLimit(parseInt(e.target.value))} onMouseUp={handleSaveLimits} onTouchEnd={handleSaveLimits} className="w-full accent-emerald-500" />
-                      </div>
-
-                      {/* Quick Actions */}
-                      <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/50 flex flex-col justify-center space-y-2">
-                        <button onClick={() => toggleCardFrozen(activeCard.id)} className={`w-full h-8 rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-1.5 transition-colors ${activeCard.isFrozen ? 'bg-emerald-500 text-white' : 'bg-red-500/10 text-red-500 hover:bg-red-500/20'}`}>
-                          {activeCard.isFrozen ? <><Unlock size={12}/>Unfreeze</> : <><Lock size={12}/>Freeze</>}
-                        </button>
-                        <button onClick={async () => { if(window.confirm("Delete virtual card permanently?")) { await useStore.getState().deleteCard(activeCard.id); setSelectedCardId(null); } }} className="w-full h-8 rounded-lg bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-300 dark:hover:bg-white/10 transition-colors">
-                          Destroy Card
-                        </button>
-                      </div>
-                    </div>
-
-                    <button onClick={() => setCreateModalOpen(true)} className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 capitalize">
-                      <PlusCircle size={14} /> Provision another virtual card
-                    </button>
-                  </div>
-
-                  {/* Right Column: The Grand Card & Selector */}
-                  <div className="w-full max-w-[340px] shrink-0 z-10 relative flex flex-col items-center">
-                    
-                    {/* The Rendered Grand Card */}
-                    <div className={`aspect-[1.586/1] w-full rounded-2xl border p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden transition-all select-none
-                      ${activeCard.cardType === 'emerald' ? 'bg-gradient-to-br from-emerald-900 via-slate-900 to-emerald-950 border-emerald-500/30' : 
-                        activeCard.cardType === 'platinum' ? 'bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 border-white/20' : 
-                        'bg-gradient-to-br from-slate-900 via-black to-slate-900 border-white/10'}
-                    `}>
-                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent skew-x-12 translate-x-[-100%] animate-[shimmer_3s_infinite]" />
-                      <div className="flex justify-between items-start z-10">
-                         <span className={`text-[10px] font-mono tracking-widest block font-bold ${activeCard.cardType === 'emerald' ? 'text-emerald-400' : 'text-slate-300'}`}>
-                           {activeCard.cardType === 'emerald' ? 'EMERALD VIRTUAL' : activeCard.cardType === 'platinum' ? 'PLATINUM VIRTUAL' : 'EBONY VIRTUAL'}
-                         </span>
-                         <button onClick={() => setShowCardNumbers(!showCardNumbers)} className="w-6 h-6 rounded bg-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer">
-                           {showCardNumbers ? <EyeOff size={10} /> : <Eye size={10} />}
-                         </button>
-                      </div>
-                      <div className="text-xl font-mono tracking-widest text-white my-4 text-center z-10 drop-shadow-md">
-                        {showCardNumbers ? activeCard.cardNumber : `••••  ••••  ••••  ${activeCard.cardNumber.slice(-4)}`}
-                      </div>
-                      <div className="flex justify-between items-end z-10">
-                        <div className="flex space-x-6 text-[9px] font-mono p-2 rounded-lg bg-black/20 backdrop-blur-md border border-white/5">
-                          <div>
-                            <span className="block uppercase text-[7px] text-slate-400">EXPIRY</span>
-                            <span className="text-white font-semibold">{activeCard.expiryDate}</span>
-                          </div>
-                          <div>
-                            <span className="block uppercase text-[7px] text-slate-400">CVV</span>
-                            <span className="text-white font-semibold">{showCardNumbers ? activeCard.cvv : '•••'}</span>
-                          </div>
-                        </div>
-                        <span className="text-[12px] font-bold text-slate-100 font-mono tracking-tight">VISA</span>
-                      </div>
-                      <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-emerald-500/20 blur-3xl rounded-full mix-blend-screen pointer-events-none" />
-                    </div>
-
-                    {/* Card Selector Horizontal List */}
-                    {cards.length > 1 && (
-                      <div className="w-full flex overflow-x-auto gap-2 p-2 mt-6 pb-2 scrollbar-hide">
-                         {cards.map(card => (
-                           <button 
-                             key={card.id}
-                             onClick={() => handleCardClick(card.id, card.spendingLimit)}
-                             className={`shrink-0 w-16 h-10 rounded-lg border flex flex-col justify-center items-center overflow-hidden relative cursor-pointer
-                               ${card.id === selectedCardId ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200 dark:border-white/10 opacity-60 hover:opacity-100'}
-                               ${card.cardType === 'emerald' ? 'bg-emerald-950/50' : card.cardType === 'platinum' ? 'bg-slate-800' : 'bg-slate-900'}`}
-                           >
-                             <span className="text-[7px] font-mono text-white tracking-widest">{card.cardNumber.slice(-4)}</span>
-                           </button>
-                         ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-300 pb-24">
+      {/* CARDS VIEW - UNIFIED LAYOUT */}
+      <div className="max-w-7xl mx-auto space-y-8 pb-24">
+        {cards.filter(c => cardTab === 'virtual' ? c.cardType !== 'physical' : c.cardType === 'physical').length === 0 ? (
           <div className="p-8 md:p-12 border border-slate-200 dark:border-white/10 rounded-3xl bg-white dark:bg-slate-900/60 shadow-xl overflow-hidden relative flex flex-col md:flex-row items-center gap-12">
             <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
             
             <div className="flex-1 space-y-6 z-10">
               <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] uppercase font-bold tracking-widest rounded-full border border-emerald-500/20">Available Now</span>
-              <h3 className="text-3xl font-bold font-sans text-slate-900 dark:text-white leading-tight">The Obsidian Physical Card</h3>
+              <h3 className="text-3xl font-bold font-sans text-slate-900 dark:text-white leading-tight">The {cardTab === 'virtual' ? 'Secure Virtual' : 'Obsidian Physical'} Card</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-md">
-                Experience borderless spending with our premium metal crafted Obsidian Card. Provides direct linkage to your checking balances for ATM withdrawals worldwide.
+                Experience borderless spending with our premium {cardTab === 'virtual' ? 'digital' : 'metal crafted'} card. Provides direct linkage to your checking balances securely.
               </p>
               
               <ul className="space-y-3 mb-6">
-                {['Zero foreign transaction fees', 'Complimentary ATM withdrawals globally', 'Enhanced physical EVM chip security', 'Tap-to-pay structural NFC integration'].map((benefit, i) => (
+                {[
+                  'Zero foreign transaction fees', 
+                  cardTab === 'virtual' ? 'Instantly provisioned digital secure numbers' : 'Complimentary ATM withdrawals globally', 
+                  cardTab === 'virtual' ? 'Auto-cancels after 3 failed charges' : 'Enhanced physical EVM chip security', 
+                  'Card linkage for seamless payments'
+                ].map((benefit, i) => (
                   <li key={i} className="flex items-center space-x-3 text-xs text-slate-700 dark:text-slate-300">
                     <CheckCircle2 size={16} className="text-emerald-500" />
                     <span>{benefit}</span>
@@ -251,23 +132,34 @@ export function CardsView() {
 
               <div className="pt-4 border-t border-slate-100 dark:border-white/5 space-y-4">
                 <div>
-                  <span className="block text-slate-900 dark:text-white font-bold mb-1">Secure Delivery & Activation</span>
-                  <span className="block text-xs text-slate-500">To maintain security logistics protocols, your physical card requires a structural activation deposit to process printing and secure courier dispatch.</span>
+                  <span className="block text-slate-900 dark:text-white font-bold mb-1">Provision & Activation</span>
+                  <span className="block text-xs text-slate-500">
+                    {cardTab === 'virtual' 
+                      ? 'A $50.00 initialization fee applies per virtual card.' 
+                      : 'The $500.00 payment is for physical card activation and processing and includes free delivery globally.'}
+                  </span>
                 </div>
                 
                 <div className="flex items-center space-x-3">
                    <div className="flex flex-col">
                      <span className="text-[10px] font-mono text-slate-500 uppercase">Activation Fee</span>
-                     <span className="text-lg font-bold text-slate-900 dark:text-white">$500.00</span>
+                     <span className="text-lg font-bold text-slate-900 dark:text-white">{cardTab === 'virtual' ? '$50.00' : '$500.00'}</span>
                    </div>
                 </div>
 
                 <a 
                   href="#support" 
-                  onClick={(e) => { e.preventDefault(); useStore.setState({ activeTab: 'support' })}}
-                  className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-6 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 text-sm"
+                  onClick={(e) => { 
+                    e.preventDefault(); 
+                    if (cardTab === 'virtual') {
+                      setCreateModalOpen(true);
+                    } else {
+                      alert("Please navigate to the Support tab to complete physical activation."); 
+                    }
+                  }}
+                  className="inline-flex h-12 items-center justify-center rounded-xl bg-emerald-600 px-6 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95 text-sm cursor-pointer"
                 >
-                   Complete Activation via Support
+                   {cardTab === 'virtual' ? 'Provision Virtual Card' : 'Complete Activation via Support'}
                 </a>
               </div>
             </div>
@@ -276,7 +168,7 @@ export function CardsView() {
                <div className="aspect-[1.586/1] w-full rounded-2xl bg-gradient-to-br from-slate-900 via-zinc-900 to-black border border-white/10 p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden transform -rotate-12 transition-transform hover:rotate-[-5deg]">
                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent skew-x-12 translate-x-[-100%] animate-[shimmer_3s_infinite]" />
                  <div className="flex justify-between items-start">
-                   <span className="text-[10px] font-mono tracking-widest text-slate-400 block font-bold">OBSIDIAN METAL</span>
+                   <span className="text-[10px] font-mono tracking-widest text-slate-400 block font-bold">OBSIDIAN {cardTab === 'virtual' ? 'VIRTUAL' : 'METAL'}</span>
                    <div className="w-8 h-6 rounded bg-yellow-600/30 border border-yellow-600/50 flex items-center justify-center overflow-hidden">
                      <div className="w-full h-px bg-yellow-600/40" />
                      <div className="w-px h-full bg-yellow-600/40 absolute" />
@@ -286,15 +178,117 @@ export function CardsView() {
                    ••••  ••••  ••••  ••••
                  </div>
                  <div className="flex justify-between items-end">
-                   <span className="block text-xs font-semibold text-slate-300">{user?.first_name ? `${user.first_name} ${user.last_name}`.toUpperCase() : 'VALUED CLIENT'}</span>
+                   <span className="block text-xs font-semibold text-slate-300">{user?.firstName ? `${user.firstName} ${user.lastName}`.toUpperCase() : 'VALUED CLIENT'}</span>
                    <span className="text-[10px] font-bold text-slate-100 font-mono tracking-tight">VISA</span>
                  </div>
                </div>
-               <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-emerald-500/30 blur-3xl rounded-full mix-blend-screen" />
+               <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-emerald-500/30 blur-3xl rounded-full mix-blend-screen pointer-events-none" />
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="space-y-8 animate-in fade-in zoom-in-95 duration-300">
+            {activeCard && (
+              <div className="p-8 md:p-12 border border-slate-200 dark:border-white/10 rounded-3xl bg-white dark:bg-slate-900/60 shadow-xl overflow-hidden relative flex flex-col md:flex-row items-center gap-12">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
+                
+                {/* Left Column: Management & Stats */}
+                <div className="flex-1 space-y-8 z-10 w-full">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] uppercase font-bold tracking-widest rounded-full border border-emerald-500/20">Active {cardTab === 'virtual' ? 'Virtual' : 'Physical'}</span>
+                      {activeCard.isFrozen && <span className="px-3 py-1 bg-red-500/10 text-red-500 font-mono text-[10px] uppercase font-bold tracking-widest rounded-full border border-red-500/20">Frozen</span>}
+                    </div>
+                    <h3 className="text-3xl font-bold font-sans text-slate-900 dark:text-white leading-tight">{activeCard.cardholderName || 'Card Account'}</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-md mt-2">
+                      Your secure endpoint. Adjust limits instantly or freeze to prevent unauthorized transactions.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Limit Control */}
+                    <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/50 space-y-3">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-mono text-slate-500 font-bold uppercase tracking-widest">Monthly Limit</span>
+                        <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">${tempLimit.toLocaleString()}</span>
+                      </div>
+                      <input type="range" min="500" max="10000" step="500" value={tempLimit} onChange={(e) => setTempLimit(parseInt(e.target.value))} onMouseUp={handleSaveLimits} onTouchEnd={handleSaveLimits} className="w-full accent-emerald-500" />
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="p-4 rounded-2xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/50 flex flex-col justify-center space-y-2">
+                      <button onClick={() => toggleCardFrozen(activeCard.id)} className={`w-full h-8 rounded-lg text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-1.5 transition-colors ${activeCard.isFrozen ? 'bg-emerald-500 text-white' : 'bg-red-500/10 text-red-500 hover:bg-red-500/20'}`}>
+                        {activeCard.isFrozen ? <><Unlock size={12}/>Unfreeze</> : <><Lock size={12}/>Freeze</>}
+                      </button>
+                      <button onClick={async () => { if(window.confirm("Delete card permanently?")) { await useStore.getState().deleteCard(activeCard.id); setSelectedCardId(null); } }} className="w-full h-8 rounded-lg bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-300 dark:hover:bg-white/10 transition-colors">
+                        Destroy Card
+                      </button>
+                    </div>
+                  </div>
+
+                  <button onClick={() => { if(cardTab==='virtual') { setCreateModalOpen(true); } else { alert('Contact support for another physical card.'); } }} className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 capitalize">
+                    <PlusCircle size={14} /> Provision another {cardTab} card
+                  </button>
+                </div>
+
+                {/* Right Column: The Grand Card & Selector */}
+                <div className="w-full max-w-[280px] md:max-w-[340px] shrink-0 z-10 relative flex flex-col items-center">
+                  
+                  {/* The Rendered Grand Card using Physical Obsidian styling but mapped coloring */}
+                  <div className={`aspect-[1.586/1] w-full rounded-2xl border p-6 flex flex-col justify-between shadow-2xl relative overflow-hidden transition-all select-none
+                    ${activeCard.cardType === 'emerald' ? 'bg-gradient-to-br from-emerald-900 via-slate-900 to-emerald-950 border-emerald-500/30' : 
+                      activeCard.cardType === 'platinum' ? 'bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 border-white/20' : 
+                      'bg-gradient-to-br from-slate-900 via-zinc-900 to-black border-white/10'}
+                  `}>
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent skew-x-12 translate-x-[-100%] animate-[shimmer_3s_infinite]" />
+                    <div className="flex justify-between items-start z-10">
+                       <span className={`text-[10px] font-mono tracking-widest block font-bold ${activeCard.cardType === 'emerald' ? 'text-emerald-400' : 'text-slate-300'}`}>
+                         {activeCard.cardType === 'emerald' ? 'EMERALD METAL' : activeCard.cardType === 'platinum' ? 'PLATINUM METAL' : 'OBSIDIAN METAL'}
+                       </span>
+                       <button onClick={() => setShowCardNumbers(!showCardNumbers)} className="w-6 h-6 rounded bg-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer">
+                         {showCardNumbers ? <EyeOff size={10} /> : <Eye size={10} />}
+                       </button>
+                    </div>
+                    <div className="text-xl font-mono tracking-widest text-white my-4 text-center z-10 drop-shadow-md">
+                      {showCardNumbers ? activeCard.cardNumber : `••••  ••••  ••••  ${activeCard.cardNumber.slice(-4)}`}
+                    </div>
+                    <div className="flex justify-between items-end z-10">
+                      <div className="flex space-x-6 text-[9px] font-mono p-2 rounded-lg bg-black/20 backdrop-blur-md border border-white/5">
+                        <div>
+                          <span className="block uppercase text-[7px] text-slate-400">EXPIRY</span>
+                          <span className="text-white font-semibold">{activeCard.expiryDate}</span>
+                        </div>
+                        <div>
+                          <span className="block uppercase text-[7px] text-slate-400">CVV</span>
+                          <span className="text-white font-semibold">{showCardNumbers ? activeCard.cvv : '•••'}</span>
+                        </div>
+                      </div>
+                      <span className="text-[12px] font-bold text-slate-100 font-mono tracking-tight">VISA</span>
+                    </div>
+                    <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-emerald-500/20 blur-3xl rounded-full mix-blend-screen pointer-events-none" />
+                  </div>
+
+                  {/* Card Selector Horizontal List */}
+                  {cards.filter(c => cardTab === 'virtual' ? c.cardType !== 'physical' : c.cardType === 'physical').length > 1 && (
+                    <div className="w-full flex overflow-x-auto gap-2 p-2 mt-6 pb-2 scrollbar-hide">
+                       {cards.filter(c => cardTab === 'virtual' ? c.cardType !== 'physical' : c.cardType === 'physical').map(card => (
+                         <button 
+                           key={card.id}
+                           onClick={() => handleCardClick(card.id, card.spendingLimit)}
+                           className={`shrink-0 w-16 h-10 rounded-lg border flex flex-col justify-center items-center overflow-hidden relative cursor-pointer
+                             ${card.id === selectedCardId ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200 dark:border-white/10 opacity-60 hover:opacity-100'}
+                             ${card.cardType === 'emerald' ? 'bg-emerald-950/50' : card.cardType === 'platinum' ? 'bg-slate-800' : 'bg-slate-900'}`}
+                         >
+                           <span className="text-[7px] font-mono text-white tracking-widest">{card.cardNumber.slice(-4)}</span>
+                         </button>
+                       ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* NEW CARD SPAWNING MODAL */}
       <AnimatePresence>

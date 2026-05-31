@@ -227,82 +227,86 @@ export function TransfersView() {
                 </select>
               </div>
 
-              {bank !== 'internal' && !bank.startsWith('crypto_') && (
-                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 mt-2">
+              {bank && (
+                <div className="space-y-4 animate-in slide-in-from-top-2 opacity-100 duration-300">
+                  {bank !== 'internal' && !bank.startsWith('crypto_') && (
+                    <div className="grid grid-cols-2 gap-3 p-3 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 mt-2">
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">SWIFT / BIC Code</label>
+                        <input type="text" placeholder="e.g. BOFAUS3N" className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" required />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">Routing Number</label>
+                        <input type="text" placeholder="e.g. 121000358" className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" required />
+                      </div>
+                      <div className="space-y-1.5 col-span-2">
+                        <label className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">Recipient Account Name</label>
+                        <input type="text" placeholder="Exact name on target account" className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" required />
+                      </div>
+                    </div>
+                  )}
+                  
+                  {bank.startsWith('crypto_') && (
+                    <div className="p-3 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 mt-2 space-y-1.5">
+                        <label className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">Destination Wallet Address</label>
+                        <input type="text" placeholder="e.g. 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 font-mono" required />
+                    </div>
+                  )}
+
+                  <div className="space-y-1.5 mt-2">
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Recipient Account Address</label>
+                    <div className="relative">
+                      <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+                      <input 
+                        type="email" 
+                        required
+                        value={recipientEmail}
+                        onChange={(e) => setRecipientEmail(e.target.value)}
+                        placeholder="e.g. elizabeth@sterling.com"
+                        className="w-full h-11 pl-9 pr-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-450 focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-1.5">
-                     <label className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">SWIFT / BIC Code</label>
-                     <input type="text" placeholder="e.g. BOFAUS3N" className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" required />
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Principal Wire Value (USD)</label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-3 text-xs font-mono text-slate-400 font-bold">$</span>
+                      <input 
+                        type="number" 
+                        required
+                        step="5"
+                        min="1"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="w-full h-11 pl-8 pr-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-450 focus:outline-none focus:border-emerald-500 font-mono"
+                      />
+                    </div>
+                    <span className="text-[9px] text-slate-400 block font-mono">Checkings Liquidity: ${totalChecking.toLocaleString()}</span>
                   </div>
+
                   <div className="space-y-1.5">
-                     <label className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">Routing Number</label>
-                     <input type="text" placeholder="e.g. 121000358" className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" required />
+                    <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Optional Memo Logs</label>
+                    <input 
+                      type="text" 
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="e.g. Inflow consulting wire"
+                      className="w-full h-11 px-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-450 focus:outline-none focus:border-emerald-500"
+                    />
                   </div>
-                  <div className="space-y-1.5 col-span-2">
-                     <label className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">Recipient Account Name</label>
-                     <input type="text" placeholder="Exact name on target account" className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500" required />
-                  </div>
+
+                  <button 
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-11 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-black hover:bg-slate-900 text-xs font-bold transition-transform hover:scale-[1.01] flex items-center justify-center space-x-2 cursor-pointer uppercase tracking-widest mt-2"
+                  >
+                    <Send size={13} />
+                    <span>Confirm Wire</span>
+                  </button>
                 </div>
               )}
-              
-              {bank.startsWith('crypto_') && (
-                <div className="p-3 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 mt-2 space-y-1.5">
-                     <label className="text-[9px] font-mono uppercase tracking-wider text-slate-500 font-bold">Destination Wallet Address</label>
-                     <input type="text" placeholder="e.g. 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 font-mono" required />
-                </div>
-              )}
-
-              <div className="space-y-1.5 mt-2">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Recipient Account Address</label>
-                <div className="relative">
-                  <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
-                  <input 
-                    type="email" 
-                    required
-                    value={recipientEmail}
-                    onChange={(e) => setRecipientEmail(e.target.value)}
-                    placeholder="e.g. elizabeth@sterling.com"
-                    className="w-full h-11 pl-9 pr-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-450 focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Principal Wire Value (USD)</label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-3 text-xs font-mono text-slate-400 font-bold">$</span>
-                  <input 
-                    type="number" 
-                    required
-                    step="5"
-                    min="1"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="0.00"
-                    className="w-full h-11 pl-8 pr-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-450 focus:outline-none focus:border-emerald-500 font-mono"
-                  />
-                </div>
-                <span className="text-[9px] text-slate-400 block font-mono">Checkings Liquidity: ${totalChecking.toLocaleString()}</span>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">Optional Memo Logs</label>
-                <input 
-                  type="text" 
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="e.g. Inflow consulting wire"
-                  className="w-full h-11 px-3 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white placeholder-slate-450 focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <button 
-                type="submit"
-                disabled={loading}
-                className="w-full h-11 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-black hover:bg-slate-900 text-xs font-bold transition-transform hover:scale-[1.01] flex items-center justify-center space-x-2 cursor-pointer uppercase tracking-widest mt-2"
-              >
-                <Send size={13} />
-                <span>Confirm Wire</span>
-              </button>
             </form>
           </div>
 

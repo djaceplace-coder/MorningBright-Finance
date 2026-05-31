@@ -1009,7 +1009,13 @@ export const useStore = create<BankState>((set, get) => {
 
     createCard: async (holder, cardType) => {
       const u = get().user;
-      if (!u) return;
+      const bal = get().balance;
+      if (!u || !bal) return;
+
+      if (bal.checking < 50) {
+        toast.error("Insufficient balance for $50 card initialization fee.");
+        return;
+      }
 
       const generateFullCard = () =>
         Array.from({ length: 4 }, () =>
@@ -1032,16 +1038,41 @@ export const useStore = create<BankState>((set, get) => {
               ? 25000
               : 10000,
         spentThisMonth: 0,
-        cardType,
+        cardType: cardType as any,
+        createdAt: new Date().toISOString(),
+      };
+
+      const txId = "tx_" + Math.random().toString(36).substring(2, 10);
+      const feeTx: Transaction = {
+        id: txId,
+        userId: u.uid,
+        amount: 50,
+        type: TransactionType.CARD_SPEND,
+        merchant: "Virtual Card Initialization Fee",
+        category: "Card Provisioning",
+        status: "completed",
         createdAt: new Date().toISOString(),
       };
 
       try {
-        set({ cards: [...get().cards, newCard] });
+        const newChecking = bal.checking - 50;
+        set({
+           cards: [...get().cards, newCard],
+           balance: { ...bal, checking: newChecking },
+           transactions: [feeTx, ...get().transactions]
+        });
+        
         await supabase.from("cards").insert(mapCardToDb(newCard));
+        await supabase.from("balances").update({ checking: newChecking, updated_at: new Date().toISOString() }).eq("uid", u.uid);
+        await supabase.from("transactions").insert(mapTransactionToDb(feeTx));
       } catch (e) {
-        set({ cards: get().cards.filter((c) => c.id !== newCard.id) });
-        toast.error(e.message || "Operation failed"); throw e;
+        // Rollback
+        set({ 
+           cards: get().cards.filter((c) => c.id !== newCard.id),
+           balance: bal,
+           transactions: get().transactions.filter(t => t.id !== txId)
+        });
+        toast.error((e as Error).message || "Operation failed"); throw e;
       }
     },
 
@@ -1387,10 +1418,23 @@ export const useStore = create<BankState>((set, get) => {
       };
 
       try {
+        const { data: userBal, error: getBalErr } = await supabase.from("balances").select("*").eq("uid", userId).maybeSingle();
+        if (getBalErr) throw getBalErr;
+
+        let newChecking = userBal?.checking || 0;
+        if (type === TransactionType.DEPOSIT || type === TransactionType.TRANSFER_RECEIVED) {
+          newChecking += amount;
+        } else if (type === TransactionType.WITHDRAWAL || type === TransactionType.TRANSFER_SENT || type === TransactionType.CARD_SPEND) {
+          newChecking -= amount;
+        }
+
+        const { error: updBalErr } = await supabase.from("balances").update({ checking: newChecking, updated_at: new Date().toISOString() }).eq("uid", userId);
+        if (updBalErr) throw updBalErr;
+
         const {error: txErr} = await supabase.from("transactions").insert(mapTransactionToDb(transaction)); if (txErr) throw txErr;
         const {error: logErr} = await supabase.from("admin_logs").insert(mapLogToDb(log)); if (logErr) throw logErr;
       } catch (e) {
-        toast.error(e.message || "Operation failed"); throw e;
+        toast.error((e as Error).message || "Operation failed"); throw e;
       }
     },
 

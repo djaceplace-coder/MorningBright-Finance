@@ -61,6 +61,10 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
   const [kycSubmitted, setKycSubmitted] = useState(false);
   const [showAllBills, setShowAllBills] = useState(false);
 
+  // AI Insights State
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+
   const [showDirectDeposit, setShowDirectDeposit] = useState(false);
   const [showSwiftTransfer, setShowSwiftTransfer] = useState(false);
   const [showWithdrawal, setShowWithdrawal] = useState(false);
