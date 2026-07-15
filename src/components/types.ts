@@ -65,7 +65,7 @@ export interface VirtualCard {
   isFrozen: boolean;
   spendingLimit: number;
   spentThisMonth: number;
-  cardType: 'platinum' | 'ebony' | 'emerald';
+  cardType: 'platinum' | 'ebony' | 'emerald' | 'physical';
   createdAt: string;
 }
 

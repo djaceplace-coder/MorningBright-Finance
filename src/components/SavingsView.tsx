@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export function SavingsView() {
   const { user, balance, savings, createSavingsGoal, contributeToSavings, loading, errorMessage, clearError } = useStore();
+  const currency = user?.currency || 'USD';
   const [goalName, setGoalName] = useState('');
   const [goalTarget, setGoalTarget] = useState('');
   const [goalInitial, setGoalInitial] = useState('');

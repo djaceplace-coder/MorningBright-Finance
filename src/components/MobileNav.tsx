@@ -28,17 +28,18 @@ export function MobileNav({ currentTab, onChangeTab }: MobileNavProps) {
     { id: 'home', label: 'Home', icon: <Home size={20} /> },
     { id: 'transfers', label: 'Transfers', icon: <ArrowLeftRight size={20} /> },
     { id: 'cards', label: 'Cards', icon: <CreditCard size={20} /> },
+    { id: 'savings', label: 'Savings', icon: <Target size={20} /> },
     { id: 'support', label: 'Support', icon: <ShieldAlert size={20} /> },
     { id: 'settings', label: 'Profile', icon: <Settings size={20} /> },
   ];
 
   return (
-    <nav className={`${isPWA ? 'flex' : 'md:hidden flex'} fixed bottom-0 left-0 right-0 h-16 bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-t border-slate-200 dark:border-white/5 justify-around items-center px-2 z-40 select-none pb-[env(safe-area-inset-bottom)] transition-colors ${isPWA ? 'max-w-[480px] mx-auto absolute' : ''}`}>
+    <nav className={`${isPWA ? 'flex' : 'md:hidden flex'} fixed bottom-0 left-0 right-0 h-16 bg-slate-100/90 dark:bg-slate-950/90 backdrop-blur-md border-t border-slate-200 dark:border-white/5 justify-around items-center px-1 overflow-x-auto scrollbar-hide z-40 select-none pb-[env(safe-area-inset-bottom)] transition-colors ${isPWA ? 'max-w-[480px] mx-auto absolute' : ''}`}>
       {menuItems.map((item) => (
         <button
           key={item.id}
           onClick={() => onChangeTab(item.id)}
-          className={`flex flex-col items-center justify-center space-y-1 w-12 h-12 rounded-xl transition-all cursor-pointer ${
+          className={`shrink-0 flex flex-col items-center justify-center space-y-1 w-[16%] h-12 rounded-xl transition-all cursor-pointer ${
             currentTab === item.id ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500'
           }`}
         >

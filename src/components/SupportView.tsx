@@ -26,6 +26,7 @@ const CopyableText = ({ text, label }: { text: string, label: string }) => {
 
 export const SupportView = () => {
   const { user, tickets, loadTickets, createTicket } = useStore();
+  const currency = user?.currency || 'USD';
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('general');

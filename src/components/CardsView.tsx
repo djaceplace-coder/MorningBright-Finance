@@ -27,6 +27,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export function CardsView() {
   const { user, cards, createCard, toggleCardFrozen, updateCardLimit, transactions } = useStore();
+  const currency = user?.currency || 'USD';
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [showCardNumbers, setShowCardNumbers] = useState(false);
   const [newCardName, setNewCardName] = useState('');

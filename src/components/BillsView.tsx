@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export function BillsView() {
   const { user, issueTransfer } = useStore();
+  const currency = user?.currency || 'USD';
   const [search, setSearch] = useState('');
   const [selectedBiller, setSelectedBiller] = useState<any>(null);
   const [accountNumber, setAccountNumber] = useState('');

@@ -55,10 +55,104 @@ const randomDate = () => {
 };
 
 // Initial interactive assets for onboarding environment
-const INITIAL_TRANSACTIONS = (userId: string): BankTransaction[] => [];
-const INITIAL_CARDS = (userId: string, name: string): VirtualCard[] => [];
-const INITIAL_SAVINGS = (userId: string): SavingsGoal[] => [];
-const INITIAL_NOTIFICATIONS = (userId: string): BankNotification[] => [];
+const INITIAL_TRANSACTIONS = (userId: string): BankTransaction[] => [
+  {
+    id: `tx_${Math.random().toString(36).substring(2, 9)}`,
+    userId,
+    amount: 150.0,
+    type: TransactionType.CARD_SPEND,
+    merchant: 'Apple Store',
+    category: 'Electronics',
+    status: TransactionStatus.COMPLETED,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+  },
+  {
+    id: `tx_${Math.random().toString(36).substring(2, 9)}`,
+    userId,
+    amount: 25.50,
+    type: TransactionType.CARD_SPEND,
+    merchant: 'Starbucks',
+    category: 'Food & Dining',
+    status: TransactionStatus.COMPLETED,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+  }
+];
+const INITIAL_CARDS = (userId: string, name: string): VirtualCard[] => [
+  {
+    id: `card_${Math.random().toString(36).substring(2, 9)}`,
+    userId,
+    cardholderName: name.toUpperCase(),
+    cardNumber: '4111 1111 1111 1111',
+    expiryDate: '12/28',
+    cvv: '123',
+    isFrozen: false,
+    spendingLimit: 10000,
+    spentThisMonth: 175.50,
+    cardType: 'ebony',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: `card_${Math.random().toString(36).substring(2, 9)}`,
+    userId,
+    cardholderName: name.toUpperCase(),
+    cardNumber: '4242 4242 4242 4242',
+    expiryDate: '09/27',
+    cvv: '456',
+    isFrozen: false,
+    spendingLimit: 50000,
+    spentThisMonth: 0,
+    cardType: 'emerald',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: `card_${Math.random().toString(36).substring(2, 9)}`,
+    userId,
+    cardholderName: name.toUpperCase(),
+    cardNumber: '4532 1123 4432 9982',
+    expiryDate: '01/29',
+    cvv: '999',
+    isFrozen: false,
+    spendingLimit: 25000,
+    spentThisMonth: 0,
+    cardType: 'physical',
+    createdAt: new Date().toISOString(),
+  }
+];
+const INITIAL_SAVINGS = (userId: string): SavingsGoal[] => [
+  {
+    id: `goal_${Math.random().toString(36).substring(2, 9)}`,
+    userId,
+    title: 'Emergency Fund',
+    targetAmount: 10000,
+    currentAmount: 2500,
+    color: 'emerald',
+    createdAt: new Date().toISOString(),
+    autoSavePercentage: 5,
+    autoSaveEnabled: true,
+  },
+  {
+    id: `goal_${Math.random().toString(36).substring(2, 9)}`,
+    userId,
+    title: 'Vacation',
+    targetAmount: 5000,
+    currentAmount: 1200,
+    color: 'amber',
+    createdAt: new Date().toISOString(),
+    autoSavePercentage: 0,
+    autoSaveEnabled: false,
+  }
+];
+const INITIAL_NOTIFICATIONS = (userId: string): BankNotification[] => [
+  {
+    id: `notif_${Math.random().toString(36).substring(2, 9)}`,
+    userId,
+    title: 'Welcome to Morning Bright',
+    message: 'Your account has been successfully provisioned.',
+    type: 'system',
+    isRead: false,
+    createdAt: new Date().toISOString(),
+  }
+];
 
 // Support Ticket mappings
 const mapTicketFromDb = (db: any): SupportTicket => ({
@@ -1044,14 +1138,14 @@ export const useStore = create<BankState>((set, get) => {
       };
 
       const txId = "tx_" + Math.random().toString(36).substring(2, 10);
-      const feeTx: Transaction = {
+      const feeTx: BankTransaction = {
         id: txId,
         userId: u.uid,
         amount: 50,
         type: TransactionType.CARD_SPEND,
         merchant: "Virtual Card Initialization Fee",
         category: "Card Provisioning",
-        status: "completed",
+        status: TransactionStatus.COMPLETED,
         createdAt: new Date().toISOString(),
       };
 
