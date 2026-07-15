@@ -94,6 +94,7 @@ export function mapUserToDb(u: any) {
     is_frozen: u.isFrozen,
     is_suspended: u.isSuspended,
     biometrics_enabled: u.biometricsEnabled,
+    currency: u.currency,
     created_at: u.createdAt
   };
 }
@@ -113,6 +114,7 @@ export function mapUserFromDb(d: any): any {
     isFrozen: d.is_frozen,
     isSuspended: d.is_suspended,
     biometricsEnabled: d.biometrics_enabled,
+    currency: d.currency || 'USD',
     createdAt: d.created_at
   };
 }

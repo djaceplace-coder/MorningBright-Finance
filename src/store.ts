@@ -143,6 +143,7 @@ interface BankState {
   markNotificationAsRead: (id: string) => Promise<void>;
   updatePinCode: (pin: string) => Promise<void>;
   updateProfile: (first: string, last: string) => Promise<void>;
+  updateCurrency: (currency: 'USD' | 'EUR' | 'GBP') => Promise<void>;
   updatePasswordSecure: (pass: string) => Promise<void>;
   updateSettingsToggle: (
     key: keyof UserSecuritySettings,
@@ -1269,7 +1270,19 @@ export const useStore = create<BankState>((set, get) => {
             last_name: last,
           })
           .eq("id", u.uid);
-      } catch (e) {
+      } catch (e: any) {
+        toast.error(e.message || "Operation failed"); throw e;
+      }
+    },
+
+    updateCurrency: async (currency) => {
+      const u = get().user;
+      if (!u) return;
+      try {
+        await supabase.from("users").update({ currency }).eq("id", u.uid);
+        set({ user: { ...u, currency } });
+        toast.success(`Currency updated to ${currency}`);
+      } catch (e: any) {
         toast.error(e.message || "Operation failed"); throw e;
       }
     },

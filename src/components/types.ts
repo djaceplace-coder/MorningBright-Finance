@@ -26,7 +26,7 @@ export interface BankTransaction {
   merchant: string;
   recipientEmail?: string;
   senderEmail?: string;
-  createdAt: string; // ISO String or Timestamp
+  createdAt: string;
   status: TransactionStatus;
 }
 
@@ -43,6 +43,7 @@ export interface UserProfile {
   isFrozen: boolean;
   isSuspended: boolean;
   biometricsEnabled: boolean;
+  currency?: 'USD' | 'EUR' | 'GBP';
   createdAt: string;
 }
 

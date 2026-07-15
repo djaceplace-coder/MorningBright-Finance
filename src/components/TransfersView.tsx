@@ -1,3 +1,4 @@
+import { formatCurrency, getCurrencySymbol } from "../utils";
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -25,6 +26,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 export function TransfersView() {
   const { user, balance, transactions, issueTransfer, loading, errorMessage, clearError, beneficiaries } = useStore();
+  const currency = user?.currency || 'USD';
   const [recipientEmail, setRecipientEmail] = useState('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -417,9 +419,9 @@ export function TransfersView() {
 
                       <div className="text-right">
                         <span className={`block font-mono text-[13px] font-bold ${
-                          isDeposit ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'
+                          isDeposit ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-200'
                         }`}>
-                          {isDeposit ? '+' : '-'}${tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          {isDeposit ? '+' : '-'}{formatCurrency(tx.amount, currency)}
                         </span>
                         <span className="text-[8px] text-emerald-600 dark:text-emerald-400 font-mono uppercase block mt-1 bg-emerald-500/5 px-1 py-0.5 rounded w-fit ml-auto">
                           {tx.status}

@@ -1,3 +1,4 @@
+import { formatCurrency, getCurrencySymbol } from "../utils";
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -122,7 +123,7 @@ export function BillsView() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono tracking-widest uppercase font-bold text-slate-500">Payment Amount ($)</label>
+                  <label className="text-[10px] font-mono tracking-widest uppercase font-bold text-slate-500">Payment Amount ({getCurrencySymbol(currency)})</label>
                   <input 
                      type="number"
                      step="0.01"

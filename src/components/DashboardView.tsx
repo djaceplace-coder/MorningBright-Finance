@@ -1,3 +1,4 @@
+import { formatCurrency, getCurrencySymbol } from "../utils";
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -53,6 +54,7 @@ interface DashboardViewProps {
 
 export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewProps) {
   const { user, balance, transactions, notifications, markNotificationAsRead, addFunds } = useStore();
+  const currency = user?.currency || 'USD';
   const [hideBalances, setHideBalances] = useState(false);
   const [showKYC, setShowKYC] = useState(false);
   const [kycSSN, setKycSSN] = useState('');
@@ -470,7 +472,7 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 font-mono uppercase tracking-widest block font-bold">Core Net Assets</span>
             <h3 className="text-3xl font-sans tracking-tight font-medium text-slate-950 dark:text-white">
-              {hideBalances ? '••••••' : `$${netCapital.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+              {hideBalances ? '••••••' : formatCurrency(netCapital, currency)}
             </h3>
           </div>
           <div className="mt-8 flex justify-between items-center text-[10px] text-slate-500 font-mono">
@@ -486,7 +488,7 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 font-mono uppercase tracking-widest block font-weight-bold font-bold">Checking Subcollection</span>
             <h3 className="text-3xl font-sans tracking-tight font-medium text-slate-950 dark:text-white">
-              {hideBalances ? '••••••' : `$${totalChecking.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+              {hideBalances ? '••••••' : formatCurrency(totalChecking, currency)}
             </h3>
           </div>
           <div className="mt-8 flex justify-between items-center">
@@ -506,7 +508,7 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 font-mono uppercase tracking-widest block font-bold">Goal Savings Reserves</span>
             <h3 className="text-3xl font-sans tracking-tight font-medium text-slate-950 dark:text-white">
-              {hideBalances ? '••••••' : `$${totalSavings.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
+              {hideBalances ? '••••••' : formatCurrency(totalSavings, currency)}
             </h3>
           </div>
           <div className="mt-8 flex justify-between items-center">
@@ -568,12 +570,12 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
                     fontSize={10} 
                     tickLine={false} 
                     axisLine={false} 
-                    tickFormatter={(val) => `$${val.toLocaleString()}`} 
+                    tickFormatter={(val) => formatCurrency(val as number, currency)} 
                   />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#090d16', borderColor: 'rgba(255,255,255,0.08)', borderRadius: '12px', fontSize: '11px', color: '#fff' }}
                     labelStyle={{ color: '#64748b', fontSize: '10px', textTransform: 'uppercase', fontFamily: 'monospace' }}
-                    formatter={(value: any) => [`$${value.toLocaleString()}`, "Combined Net Assets"]}
+                    formatter={(value: any) => [formatCurrency(value as number, currency), "Combined Net Assets"]}
                   />
                   <Area 
                     type="monotone" 
@@ -679,7 +681,7 @@ export function DashboardView({ onOpenTransfer, onNavigateTab }: DashboardViewPr
                       ? 'text-emerald-600 dark:text-emerald-400'
                       : 'text-slate-700 dark:text-slate-300'
                   }`}>
-                    {tx.type === 'deposit' || tx.type === 'transfer_received' ? '+' : '-'}${tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    {tx.type === 'deposit' || tx.type === 'transfer_received' ? '+' : '-'}{formatCurrency(tx.amount, currency)}
                   </span>
                   <span className="text-[8px] text-emerald-600 dark:text-emerald-400 font-mono uppercase block mt-0.5 bg-emerald-500/5 px-1 py-0.5 rounded w-fit ml-auto">
                     {tx.status}

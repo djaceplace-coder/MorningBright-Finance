@@ -1,3 +1,4 @@
+import { formatCurrency } from "../utils";
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -143,7 +144,7 @@ export function CardsView() {
                 <div className="flex items-center space-x-3">
                    <div className="flex flex-col">
                      <span className="text-[10px] font-mono text-slate-500 uppercase">Activation Fee</span>
-                     <span className="text-lg font-bold text-slate-900 dark:text-white">{cardTab === 'virtual' ? '$50.00' : '$500.00'}</span>
+                     <span className="text-lg font-bold text-slate-900 dark:text-white">{formatCurrency(cardTab === 'virtual' ? 50 : 500, currency)}</span>
                    </div>
                 </div>
 

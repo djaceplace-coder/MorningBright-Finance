@@ -1,3 +1,4 @@
+import { formatCurrency, getCurrencySymbol } from "../utils";
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -136,7 +137,7 @@ export function SavingsView() {
           <div className="space-y-1">
             <span className="text-[10px] text-slate-400 font-mono uppercase block font-bold">Total Goal Allocations</span>
             <span className="text-2xl font-mono text-emerald-600 dark:text-emerald-400 font-bold">
-              ${(balance?.savings || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+               {formatCurrency(balance?.savings || 0, currency)}
             </span>
           </div>
           <PiggyBank className="w-10 h-10 text-emerald-500/20 dark:text-emerald-500/10" />

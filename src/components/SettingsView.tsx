@@ -25,7 +25,7 @@ import { motion } from 'motion/react';
 import { supabase } from '../supabase';
 
 export function SettingsView() {
-  const { user, settings, updateProfile, updateSettingsToggle, loading, errorMessage, clearError } = useStore();
+  const { user, settings, updateProfile, updateSettingsToggle, updateCurrency, loading, errorMessage, clearError } = useStore();
   
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
@@ -241,6 +241,26 @@ export function SettingsView() {
                 Update Profile
               </button>
             </form>
+          </div>
+
+          <div className="p-6 rounded-2xl border border-slate-200 dark:border-white/5 bg-white dark:bg-slate-900/40 space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Account Currency</h3>
+              <p className="text-[10px] text-slate-500 font-mono uppercase mt-0.5">Primary currency formatting</p>
+            </div>
+            
+            <select
+              value={user?.currency || 'USD'}
+              onChange={async (e) => {
+                await updateCurrency(e.target.value as any);
+                setSuccessMsg(`Currency updated to ${e.target.value}`);
+              }}
+              className="w-full h-11 px-3 rounded-lg border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-slate-950 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-colors"
+            >
+              <option value="USD">USD ($) - US Dollar</option>
+              <option value="EUR">EUR (€) - Euro</option>
+              <option value="GBP">GBP (£) - British Pound</option>
+            </select>
           </div>
 
           {/* KYC VERIFICATION BOX */}

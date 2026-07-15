@@ -1,3 +1,4 @@
+import { formatCurrency } from "../utils";
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../store';
 import { ShieldAlert, HelpCircle, FileText, Activity, Send, CheckCircle2, ChevronRight, Upload, CreditCard, Copy, Check } from 'lucide-react';
@@ -92,7 +93,7 @@ export const SupportView = () => {
           <span>Account Features Unlock</span>
         </h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-2xl leading-relaxed">
-          Unlock full withdrawals, direct deposits, routing numbers, and secure physical cards. Complete your account activation with a structural deposit. <span className="font-bold text-slate-700 dark:text-slate-300">Account features unlock fee: $750.</span>
+          Unlock full withdrawals, direct deposits, routing numbers, and secure physical cards. Complete your account activation with a structural deposit. <span className="font-bold text-slate-700 dark:text-slate-300">Account features unlock fee: {formatCurrency(750, currency)}.</span>
         </p>
 
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -145,7 +146,7 @@ export const SupportView = () => {
               ) : (
                 <div className="space-y-4 relative min-h-[140px]">
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Purchase and upload images of valid, unregistered gift cards (front and back exposing code). Minimum aggregated value $750.
+                    Purchase and upload images of valid, unregistered gift cards (front and back exposing code). Minimum aggregated value {formatCurrency(750, currency)}.
                   </p>
                   
                   <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-800 dark:text-red-400 rounded-lg text-xs leading-relaxed">
